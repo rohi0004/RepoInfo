@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 
-export function UserIcon({ className }: { className?: string }) {
+export function UserIcon({ className, style }: { className?: string; style?: React.CSSProperties }) {
     return (
-        <div className={cn("w-full h-full rounded-full flex items-center justify-center", className)} style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)' }}>
+        <div className={cn("w-full h-full rounded-full flex items-center justify-center", className)} style={{ background: 'linear-gradient(135deg, #ec4899, #8b5cf6)', ...style }}>
             <svg
                 viewBox="0 0 100 100"
                 className="w-full h-full p-3"

@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  app:
+    build: .
+    image: repomind:dev
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    volumes:
+      - ./:/app:cached
+      - /app/node_modules
+    working_dir: /app
+    command: sh -lc "npm install --no-audit --no-fund && npm run dev"
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

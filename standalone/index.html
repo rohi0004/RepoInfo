@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>RepoMind — Fallback</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, 'Helvetica Neue', Arial; margin: 0; padding: 40px; background:#0f172a; color: #e6eef8 }
+      .card { max-width: 900px; margin: 0 auto; background:#071131; padding:24px; border-radius:12px; box-shadow: 0 6px 24px rgba(2,6,23,0.6) }
+      a.button { display:inline-block; margin-top:16px; background:#06b6d4; color:#04203a; padding:8px 14px; border-radius:8px; text-decoration:none; font-weight:600 }
+      pre { background:#021025; padding:12px; border-radius:8px; overflow:auto }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>RepoMind — Local Fallback</h1>
+      <p>This environment's Node version (<strong id="nodever">unknown</strong>) is older than Next.js' requirement, so a lightweight fallback page is served instead of the full app.</p>
+      <p>To run the full app, upgrade Node to <strong>>= 20.9.0</strong> or use Docker as described in <code>DEV_RUN.md</code>.</p>
+
+      <h3>Quick actions</h3>
+      <ul>
+        <li>Open the project folder in your editor to run the full app.</li>
+        <li>See <code>DEV_RUN.md</code> for exact commands.</li>
+      </ul>
+
+      <h3>Sample commands</h3>
+      <pre>$ nvm install 20
+$ nvm use 20
+$ npm install
+$ npm run dev
+      </pre>
+
+      <a class="button" href="https://github.com/rohi0004/repomind" target="_blank" rel="noopener">View upstream RepoMind</a>
+    </div>
+    <script>document.getElementById('nodever').textContent = navigator.userAgent || 'unknown';</script>
+  </body>
+</html>

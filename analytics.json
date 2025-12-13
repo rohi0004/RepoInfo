@@ -1,0 +1,30 @@
+{
+  "visitors": ["test-visitor-1", "test-visitor-2"],
+  "visitorData": [
+    [
+      "test-visitor-1",
+      {
+        "firstSeen": 1732752000000,
+        "lastSeen": 1732755600000,
+        "country": "US",
+        "device": "desktop",
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+        "queryCount": 3
+      }
+    ],
+    [
+      "test-visitor-2",
+      {
+        "firstSeen": 1732753000000,
+        "lastSeen": 1732756000000,
+        "country": "IN",
+        "device": "mobile",
+        "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)",
+        "queryCount": 1
+      }
+    ]
+  ],
+  "queries": {
+    "total": 4
+  }
+}

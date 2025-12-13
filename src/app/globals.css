@@ -1,0 +1,325 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+:root {
+  --background: #f8f9fc;
+  --foreground: #1e293b;
+  --surface: #ffffff;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --accent: #70DDB5;
+  --sidebar-bg: linear-gradient(180.01deg, #FFFFFF 52.68%, #7DC8AD 101.1%);
+  --sidebar-text: #0f4c3a;
+  --card-bg: #ffffff;
+  --hover-bg: rgba(112, 221, 181, 0.1);
+  --input-bg: #ffffff;
+  --gradient-start: #FFFFFF;
+  --gradient-end: #7DC8AD;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-montserrat);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0f1729;
+    --foreground: #e2e8f0;
+    --surface: #1e293b;
+    --muted: #94a3b8;
+    --border: #334155;
+    --accent: #3b82f6;
+    --sidebar-bg: linear-gradient(180deg, #1a2332 0%, #163451 40%, #0E9074 85%, #0BB783 100%);
+    --sidebar-text: #93c5fd;
+    --card-bg: #1e293b;
+    --hover-bg: rgba(59, 130, 246, 0.1);
+    --input-bg: #1e293b;
+    --gradient-start: #1a2332;
+    --gradient-end: #0BB783;
+  }
+}
+
+/* When using class-based dark mode (next-themes with `attribute="class"`) */
+.dark {
+  --background: #0f1729;
+  --foreground: #e2e8f0;
+  --surface: #1e293b;
+  --muted: #94a3b8;
+  --border: #334155;
+  --accent: #3b82f6;
+  --sidebar-bg: linear-gradient(180deg, #1a2332 0%, #163451 40%, #0E9074 85%, #0BB783 100%);
+  --sidebar-text: #93c5fd;
+  --card-bg: #1e293b;
+  --hover-bg: rgba(59, 130, 246, 0.1);
+  --input-bg: #1e293b;
+  --gradient-start: #1a2332;
+  --gradient-end: #0BB783;
+}
+
+@property --angle {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0turn;
+}
+
+@keyframes spin-gradient {
+  to {
+    --angle: 1turn;
+  }
+}
+
+.conic-border-container {
+  position: relative;
+
+  border: 2px solid transparent;
+  /* uniform width */
+  isolation: isolate;
+}
+
+.conic-border-container::before {
+  content: " ";
+  position: absolute;
+  inset: -2px;
+  /* negative border width */
+  z-index: -1;
+  border: inherit;
+  border-radius: inherit;
+  background-image: conic-gradient(from var(--angle), #9333ea 0%, #3b82f6 50%, #9333ea 100%);
+  background-origin: border-box;
+  -webkit-mask:
+    linear-gradient(black, black) content-box,
+    linear-gradient(black, black);
+  mask: linear-gradient(black, black),
+    linear-gradient(black, black);
+  -webkit-mask-clip: content-box, border-box;
+  mask-clip: content-box, border-box;
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: spin-gradient 3s linear infinite;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  /* Medium weight for better visibility */
+}
+
+/* Improve text visibility */
+p, li, span {
+  color: var(--foreground);
+  opacity: 0.95;
+}
+
+.dark p, .dark li, .dark span {
+  opacity: 1;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+/* Muted text should still be visible */
+.text-muted, [style*="color: var(--muted)"] {
+  opacity: 0.85;
+}
+
+/* Mermaid diagram text visibility fixes */
+.mermaid text,
+.mermaid tspan,
+.mermaid .nodeLabel,
+.mermaid .edgeLabel,
+.mermaid .label {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+}
+
+/* Light mode mermaid */
+:root .mermaid text,
+:root .mermaid tspan,
+:root .mermaid .nodeLabel,
+:root .mermaid .edgeLabel,
+:root .mermaid .label {
+  fill: #1e293b !important;
+  color: #1e293b !important;
+}
+
+/* Mermaid diagram shapes visibility */
+.mermaid rect,
+.mermaid circle,
+.mermaid polygon,
+.mermaid path {
+  stroke: #60a5fa !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid rect {
+  fill: #1e3a5f !important;
+}
+
+:root .mermaid rect {
+  fill: #e0f2fe !important;
+}
+
+.mermaid .node rect,
+.mermaid .node circle,
+.mermaid .node polygon {
+  fill: #1e3a5f !important;
+}
+
+:root .mermaid .node rect,
+:root .mermaid .node circle,
+:root .mermaid .node polygon {
+  fill: #dbeafe !important;
+  stroke: #2563eb !important;
+}
+
+/* Code block styling for better visibility */
+pre {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+pre code {
+  color: var(--foreground) !important;
+  font-family: 'Courier New', monospace;
+  background: transparent !important;
+}
+
+/* Inline code styling */
+code {
+  color: #60a5fa !important;
+  background: rgba(59, 130, 246, 0.1) !important;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+  font-family: 'Courier New', monospace;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-weight: 600;
+}
+
+/* Light mode inline code */
+:root code {
+  color: #2563eb !important;
+  background: rgba(37, 99, 235, 0.1) !important;
+  border: 1px solid rgba(37, 99, 235, 0.2);
+}
+
+/* Ensure pre > code doesn't get inline styles */
+pre > code {
+  color: var(--foreground) !important;
+  background: transparent !important;
+  padding: 0;
+  border: none;
+  font-size: 1em;
+  font-weight: normal;
+}
+
+/* Syntax highlighting adjustments for dark mode */
+.dark pre code .token.comment,
+.dark pre code .token.prolog,
+.dark pre code .token.doctype,
+.dark pre code .token.cdata {
+  color: #7dd3fc !important; /* Light blue for comments */
+}
+
+.dark pre code .token.punctuation {
+  color: #e2e8f0 !important; /* Light gray */
+}
+
+.dark pre code .token.property,
+.dark pre code .token.tag,
+.dark pre code .token.boolean,
+.dark pre code .token.number,
+.dark pre code .token.constant,
+.dark pre code .token.symbol {
+  color: #fbbf24 !important; /* Amber */
+}
+
+.dark pre code .token.selector,
+.dark pre code .token.attr-name,
+.dark pre code .token.string,
+.dark pre code .token.char,
+.dark pre code .token.builtin {
+  color: #86efac !important; /* Green */
+}
+
+.dark pre code .token.operator,
+.dark pre code .token.entity,
+.dark pre code .token.url,
+.dark pre code .token.variable {
+  color: #fbbf24 !important; /* Amber */
+}
+
+.dark pre code .token.atrule,
+.dark pre code .token.attr-value,
+.dark pre code .token.keyword {
+  color: #c084fc !important; /* Purple */
+}
+
+.dark pre code .token.function,
+.dark pre code .token.class-name {
+  color: #60a5fa !important; /* Blue */
+}
+
+.dark pre code .token.regex,
+.dark pre code .token.important {
+  color: #fb923c !important; /* Orange */
+}
+
+/* Light mode syntax highlighting */
+pre code .token.comment,
+pre code .token.prolog,
+pre code .token.doctype,
+pre code .token.cdata {
+  color: #64748b !important; /* Slate gray */
+}
+
+pre code .token.property,
+pre code .token.tag,
+pre code .token.boolean,
+pre code .token.number,
+pre code .token.constant,
+pre code .token.symbol {
+  color: #dc2626 !important; /* Red */
+}
+
+pre code .token.selector,
+pre code .token.attr-name,
+pre code .token.string,
+pre code .token.char,
+pre code .token.builtin {
+  color: #16a34a !important; /* Green */
+}
+
+pre code .token.operator,
+pre code .token.entity,
+pre code .token.url,
+pre code .token.variable {
+  color: #ea580c !important; /* Orange */
+}
+
+pre code .token.atrule,
+pre code .token.attr-value,
+pre code .token.keyword {
+  color: #9333ea !important; /* Purple */
+}
+
+pre code .token.function,
+pre code .token.class-name {
+  color: #2563eb !important; /* Blue */
+}
+
+pre code .token.regex,
+pre code .token.important {
+  color: #dc2626 !important; /* Red */
+}

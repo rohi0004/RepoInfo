@@ -1,3 +1,5 @@
+import typography from '@tailwindcss/typography';
+
 export default {
   content: [
     './src/app/**/*.{js,ts,jsx,tsx}',
@@ -10,6 +12,6 @@ export default {
   // Use class strategy so next-themes can toggle the `dark` class
   darkMode: 'class',
   plugins: [
-    require('@tailwindcss/typography'),
+    typography,
   ],
 };

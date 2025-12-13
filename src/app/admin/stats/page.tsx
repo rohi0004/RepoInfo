@@ -252,20 +252,24 @@ export default function AdminStatsPage() {
                             Device Breakdown
                         </h2>
                         <div className="space-y-3">
-                            {Object.entries(safeData.deviceStats).map(([device, count]) => (
-                                <div key={device} className="flex items-center justify-between">
-                                    <span className="capitalize" style={{ color: 'var(--foreground)' }}>{device}</span>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-32 h-2 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
-                                            <div
-                                                className="h-full"
-                                                style={{ width: `${(count / safeData.totalVisitors) * 100}%`, background: 'var(--accent)', opacity: 0.7 }}
-                                            />
+                            {Object.entries(safeData.deviceStats).map(([device, count]) => {
+                                const safeCount = count ?? 0;
+                                const safeTotal = safeData.totalVisitors ?? 1;
+                                return (
+                                    <div key={device} className="flex items-center justify-between">
+                                        <span className="capitalize" style={{ color: 'var(--foreground)' }}>{device}</span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-32 h-2 rounded-full overflow-hidden" style={{ background: 'var(--border)' }}>
+                                                <div
+                                                    className="h-full"
+                                                    style={{ width: `${(safeCount / safeTotal) * 100}%`, background: 'var(--accent)', opacity: 0.7 }}
+                                                />
+                                            </div>
+                                            <span className="font-mono text-sm" style={{ color: 'var(--muted)' }}>{safeCount}</span>
                                         </div>
-                                        <span className="font-mono text-sm" style={{ color: 'var(--muted)' }}>{count}</span>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
 

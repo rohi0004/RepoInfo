@@ -5,6 +5,21 @@ import { useState, useEffect } from "react";
 
 export const dynamic = 'force-dynamic'; // Ensure real-time data
 
+// Type definition for analytics data
+type AnalyticsData = {
+    totalVisitors?: number;
+    totalQueries?: number;
+    activeUsers24h?: number;
+    deviceStats?: {
+        desktop?: number;
+        mobile?: number;
+        tablet?: number;
+        [key: string]: number | undefined;
+    };
+    countryStats?: Record<string, number>;
+    recentVisitors?: Array<any>;
+};
+
 function AdminLoginPage({ isError }: { isError: boolean }) {
     const [password, setPassword] = useState('');
 
@@ -119,7 +134,7 @@ interface AdminStatsPageProps {
 export default function AdminStatsPage() {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
-    const [data, setData] = useState(null);
+    const [data, setData] = useState<AnalyticsData | null>(null);
     const [isError, setIsError] = useState(false);
 
     useEffect(() => {

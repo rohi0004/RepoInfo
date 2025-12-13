@@ -136,6 +136,8 @@ export default function AdminStatsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [data, setData] = useState<AnalyticsData | null>(null);
     const [isError, setIsError] = useState(false);
+    const [fetchError, setFetchError] = useState<string | null>(null);
+    const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
         // Check authentication using hash
@@ -159,6 +161,7 @@ export default function AdminStatsPage() {
         if (isAuthenticated && !data) {
             // Fetch analytics data from API
             const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
             
             fetch('/api/admin/analytics', {
                 signal: controller.signal,
@@ -173,27 +176,50 @@ export default function AdminStatsPage() {
                     return res.json();
                 })
                 .then(jsonData => {
-                    console.log('Analytics data fetched:', jsonData);
-                    setData(jsonData || {});
+                    console.log('Analytics data fetched successfully:', jsonData);
+                    setFetchError(null);
+                    setData(jsonData || {
+                        totalVisitors: 0,
+                        totalQueries: 0,
+                        activeUsers24h: 0,
+                        deviceStats: {},
+                        countryStats: {},
+                        recentVisitors: []
+                    });
                 })
                 .catch(err => {
+                    clearTimeout(timeoutId);
                     if (err.name !== 'AbortError') {
+                        const errorMsg = err instanceof Error ? err.message : 'Unknown error';
                         console.error('Failed to fetch analytics:', err);
-                        // Set empty data to show something
-                        setData({
-                            totalVisitors: 0,
-                            totalQueries: 0,
-                            activeUsers24h: 0,
-                            deviceStats: {},
-                            countryStats: {},
-                            recentVisitors: []
-                        });
+                        setFetchError(errorMsg);
+                        
+                        // Auto-retry once after 2 seconds
+                        if (retryCount < 1) {
+                            setTimeout(() => {
+                                setRetryCount(prev => prev + 1);
+                                setData(null); // Reset to trigger refetch
+                            }, 2000);
+                        } else {
+                            // Set empty data after retry fails
+                            setData({
+                                totalVisitors: 0,
+                                totalQueries: 0,
+                                activeUsers24h: 0,
+                                deviceStats: {},
+                                countryStats: {},
+                                recentVisitors: []
+                            });
+                        }
                     }
                 });
 
-            return () => controller.abort();
+            return () => {
+                clearTimeout(timeoutId);
+                controller.abort();
+            };
         }
-    }, [isAuthenticated, data]);
+    }, [isAuthenticated, data, retryCount]);
 
     if (isLoading) {
         return <div>Loading...</div>;
@@ -204,7 +230,19 @@ export default function AdminStatsPage() {
     }
 
     if (!data) {
-        return <div>Loading analytics...</div>;
+        return (
+            <div className="min-h-screen p-8 flex items-center justify-center" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold mb-4">Loading Analytics...</h1>
+                    {fetchError && (
+                        <div className="mt-4 p-4 rounded-lg border" style={{ background: 'rgba(239, 68, 68, 0.1)', borderColor: 'rgba(239, 68, 68, 0.2)', color: '#ef4444' }}>
+                            <p className="text-sm font-medium">Error: {fetchError}</p>
+                            <p className="text-xs mt-2 opacity-70">Attempting to load data... (Retry {retryCount}/1)</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        );
     }
 
     // Provide safe defaults for data structure

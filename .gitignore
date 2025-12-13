@@ -33,6 +33,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env
 .env.local
+.env.*.local
 
 # vercel
 .vercel
@@ -46,3 +47,46 @@ public/sw.js
 public/sw.js.map
 public/workbox-*.js
 public/workbox-*.js.map
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS files
+Thumbs.db
+.AppleDouble
+.LSOverride
+
+# npm
+package-lock.json
+yarn.lock
+.npm
+.pnpm
+
+# build artifacts
+dist/
+*.tgz
+*.tar.gz
+
+# cache
+.cache/
+.eslintcache
+
+# temporary files
+*.tmp
+*.temp
+.tmp/
+
+# server node_modules
+/server/node_modules/
+
+# analytics data (if sensitive)
+analytics.json
+
+# any local overrides
+.local/
+local/

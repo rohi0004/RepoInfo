@@ -6,9 +6,31 @@ export async function GET(request: NextRequest) {
         // No key validation needed - just return data
         // Authentication is handled on client side via hash
         const data = await getAnalyticsData();
-        return NextResponse.json(data);
+        
+        // Ensure data is properly serialized
+        return NextResponse.json(data || {
+            totalVisitors: 0,
+            totalQueries: 0,
+            activeUsers24h: 0,
+            deviceStats: {},
+            countryStats: {},
+            recentVisitors: []
+        }, {
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache, no-store, must-revalidate'
+            }
+        });
     } catch (error) {
         console.error('Analytics API error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+        return NextResponse.json({ 
+            error: 'Internal server error',
+            totalVisitors: 0,
+            totalQueries: 0,
+            activeUsers24h: 0,
+            deviceStats: {},
+            countryStats: {},
+            recentVisitors: []
+        }, { status: 500 });
     }
 }

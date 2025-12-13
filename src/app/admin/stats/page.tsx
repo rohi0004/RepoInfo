@@ -158,10 +158,40 @@ export default function AdminStatsPage() {
     useEffect(() => {
         if (isAuthenticated && !data) {
             // Fetch analytics data from API
-            fetch('/api/admin/analytics')
-                .then(res => res.json())
-                .then(setData)
-                .catch(err => console.error('Failed to fetch analytics:', err));
+            const controller = new AbortController();
+            
+            fetch('/api/admin/analytics', {
+                signal: controller.signal,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error(`API error: ${res.status} ${res.statusText}`);
+                    }
+                    return res.json();
+                })
+                .then(jsonData => {
+                    console.log('Analytics data fetched:', jsonData);
+                    setData(jsonData || {});
+                })
+                .catch(err => {
+                    if (err.name !== 'AbortError') {
+                        console.error('Failed to fetch analytics:', err);
+                        // Set empty data to show something
+                        setData({
+                            totalVisitors: 0,
+                            totalQueries: 0,
+                            activeUsers24h: 0,
+                            deviceStats: {},
+                            countryStats: {},
+                            recentVisitors: []
+                        });
+                    }
+                });
+
+            return () => controller.abort();
         }
     }, [isAuthenticated, data]);
 

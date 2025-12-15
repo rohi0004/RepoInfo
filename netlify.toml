@@ -1,8 +1,6 @@
 [build]
-  # Run a clean install, then list Tailwind-related packages to aid debugging,
-  # then build. The `ls` output will appear in Netlify logs so we can verify
-  # whether `tailwindcss` and `@tailwindcss/typography` were installed.
-  command = "rm -rf .next && npm ci && ls -la node_modules/tailwindcss || true && ls -la node_modules/@tailwindcss || true && npm run build"
+  # Use 'npm install' instead of 'npm ci' to ensure devDependencies (tailwindcss, postcss, autoprefixer) are installed
+  command = "rm -rf .next && npm install && npm run build"
   publish = ".next"
 
 [build.environment]

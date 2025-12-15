@@ -10,7 +10,7 @@ export async function generateDocumentation(
     type: 'jsdoc' | 'readme' | 'comments' = 'jsdoc'
 ): Promise<string> {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
 
         const prompt = `
       Generate ${type.toUpperCase()} documentation for the following code.

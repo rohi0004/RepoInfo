@@ -65,7 +65,7 @@ export default function PricingPage() {
                     <Sparkles className="w-5 h-5 text-yellow-500" />
                     <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">Pricing</h1>
                 </div>
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">You get up to 2 free queries for testing. Choose a plan to unlock more capacity and priority processing.</p>
+                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">You get up to 5 free queries for testing. Choose a plan to unlock more capacity and priority processing.</p>
             </div>
 
             <div className="max-w-5xl mx-auto mt-10 grid gap-6 md:grid-cols-2">

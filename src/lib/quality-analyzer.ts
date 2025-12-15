@@ -91,7 +91,7 @@ export async function analyzeCodeQuality(
 
     // 2. AI Qualitative Analysis (Zero-Cost Linter)
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
       You are a senior code reviewer. Analyze this code file (${filename}) for quality issues.

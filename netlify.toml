@@ -1,6 +1,6 @@
 [build]
-  # Use 'npm install' instead of 'npm ci' to ensure devDependencies (tailwindcss, postcss, autoprefixer) are installed
-  command = "rm -rf .next && npm install && npm run build"
+  # Force clean install with devDependencies (tailwindcss, postcss, autoprefixer)
+  command = "rm -rf .next node_modules && npm install --include=dev && npm run build"
   publish = ".next"
 
 [build.environment]

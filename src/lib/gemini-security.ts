@@ -94,7 +94,7 @@ export async function analyzeCodeWithGemini(
 ): Promise<SecurityFinding[]> {
     try {
         const model = genAI.getGenerativeModel({
-            model: 'models/gemini-1.5-flash',
+            model: 'gemini-1.5-flash',
             tools: [{ functionDeclarations: securityAnalysisFunctions as any }]
         });
 

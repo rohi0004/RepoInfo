@@ -27,16 +27,30 @@ export default function PricingPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ planId, visitorId, returnUrl })
             });
+            
+            if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+                console.error('❌ Checkout API error:', res.status, errorData);
+                
+                if (res.status === 503) {
+                    alert('⚠️ Payment system is not configured yet. Please contact support at sahrohitkumar10@gmail.com');
+                } else {
+                    alert(`❌ ${errorData.error || 'Failed to start checkout'}`);
+                }
+                return;
+            }
+            
             const data = await res.json();
             if (data.url) {
+                console.log('✅ Redirecting to Stripe checkout:', data.url);
                 window.location.href = data.url;
             } else {
-                // show a friendly alert if something goes wrong
+                console.error('❌ No checkout URL returned:', data);
                 alert(data.error || 'Failed to start checkout');
             }
         } catch (e: any) {
-            console.error(e);
-            alert('Checkout error');
+            console.error('❌ Checkout error:', e);
+            alert(`Checkout error: ${e.message || 'Please try again'}`);
         } finally {
             setLoadingPlan(null);
         }

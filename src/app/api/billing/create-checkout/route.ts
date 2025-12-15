@@ -10,6 +10,15 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'Missing planId or visitorId' }, { status: 400 });
         }
 
+        // Check if Stripe is configured
+        if (!process.env.STRIPE_SECRET_KEY) {
+            console.error('❌ STRIPE_SECRET_KEY not configured');
+            return NextResponse.json({ 
+                error: 'Payment system not configured. Please contact support.',
+                details: 'STRIPE_SECRET_KEY missing'
+            }, { status: 503 });
+        }
+
         const stripe = getStripe();
 
         // Map planId to Stripe price ID via env vars
@@ -20,10 +29,20 @@ export async function POST(req: Request) {
 
         const priceId = PRICE_MAP[planId];
         if (!priceId) {
-            return NextResponse.json({ error: 'Unknown planId or missing price configuration' }, { status: 400 });
+            console.error(`❌ Missing Stripe price ID for plan: ${planId}`);
+            console.error('Available env vars:', {
+                hasProMonthly: !!process.env.STRIPE_PRICE_PRO_MONTHLY,
+                hasProYearly: !!process.env.STRIPE_PRICE_PRO_YEARLY
+            });
+            return NextResponse.json({ 
+                error: 'Payment plan not configured. Please contact support.',
+                details: `Missing price configuration for ${planId}`
+            }, { status: 503 });
         }
 
         const origin = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        console.log(`✅ Creating Stripe checkout for ${planId}, origin: ${origin}`);
+        
         const session = await stripe.checkout.sessions.create({
             mode: 'subscription',
             line_items: [ { price: priceId, quantity: 1 } ],
@@ -36,6 +55,8 @@ export async function POST(req: Request) {
                 returnUrl: returnUrl || '/chat?welcome=1'
             }
         });
+        
+        console.log(`✅ Stripe session created: ${session.id}`);
 
         return NextResponse.json({ url: session.url });
     } catch (e: any) {

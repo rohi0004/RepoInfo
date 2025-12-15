@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Helper to get a fresh model instance
-function getModel(modelName: string = "gemini-1.5-flash") {
+function getModel(modelName: string = "models/gemini-1.5-flash") {
   const apiKey = process.env.GEMINI_API_KEY || "";
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY environment variable is not set");
@@ -101,7 +101,7 @@ export async function analyzeFileSelection(
     `;
 
   try {
-    const result = await getModel("gemini-1.5-flash").generateContent(prompt);
+    const result = await getModel("models/gemini-1.5-flash").generateContent(prompt);
     const response = result.response.text();
     const cleanResponse = response.replace(/```json/g, "").replace(/```/g, "").trim();
     const parsed = JSON.parse(cleanResponse);

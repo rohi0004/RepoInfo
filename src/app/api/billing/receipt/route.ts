@@ -43,14 +43,14 @@ export async function GET(req: Request) {
         } catch (e) {
             // ignore font-detection errors
         }
-        const chunks: Uint8Array[] = [];
+        const chunks: Buffer[] = [];
 
-        doc.on('data', (chunk: Uint8Array) => chunks.push(chunk));
+        doc.on('data', (chunk: Buffer) => chunks.push(chunk));
 
-        const endPromise = new Promise<Uint8Array>((resolve, reject) => {
+        const endPromise = new Promise<Buffer>((resolve, reject) => {
             doc.on('end', () => {
                 try {
-                    const result = Buffer.concat(chunks as any);
+                    const result = Buffer.concat(chunks);
                     resolve(result);
                 } catch (e) {
                     reject(e);
@@ -82,7 +82,8 @@ export async function GET(req: Request) {
 
         const buffer = await endPromise;
 
-        return new Response(buffer, {
+        // Convert Buffer to Uint8Array for Response compatibility
+        return new NextResponse(new Uint8Array(buffer), {
             status: 200,
             headers: {
                 'Content-Type': 'application/pdf',

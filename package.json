@@ -49,6 +49,7 @@
     "@tailwindcss/typography": "^0.5.19",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "^20",
+    "@types/pdfkit": "^0.17.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-syntax-highlighter": "^15.5.13",

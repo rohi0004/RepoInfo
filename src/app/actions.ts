@@ -6,6 +6,7 @@ import { scanFiles, getScanSummary, groupBySeverity, type SecurityFinding, type 
 import { analyzeCodeWithGemini } from "@/lib/gemini-security";
 import { countTokens } from "@/lib/tokens";
 import type { StreamUpdate } from "@/lib/streaming-types";
+import { checkAllowance } from '@/lib/billing';
 
 export async function fetchGitHubData(input: string) {
     // Input format: "username" or "owner/repo"
@@ -151,6 +152,36 @@ export async function generateAnswer(
     profileData?: any, // Optional profile data
     visitorId?: string
 ): Promise<string> {
+    // Server-side allowance check (authoritative)
+    try {
+        if (visitorId) {
+            const allowance = await checkAllowance(visitorId);
+            if (!allowance.allowed) {
+                const err: any = new Error('Quota exceeded');
+                err.status = 429;
+                throw err;
+            }
+        }
+    } catch (e) {
+        if ((e as any)?.status === 429) throw e;
+        console.error('Allowance check failed, allowing request by default:', e);
+    }
+
+    // Server-side allowance check (authoritative)
+    try {
+        if (visitorId) {
+            const allowance = await checkAllowance(visitorId);
+            if (!allowance.allowed) {
+                const err: any = new Error('Quota exceeded');
+                err.status = 429;
+                throw err;
+            }
+        }
+    } catch (e) {
+        if ((e as any)?.status === 429) throw e;
+        console.error('Allowance check failed, allowing request by default:', e);
+    }
+
     // Track analytics
     try {
         // Enable tracking in development for testing
@@ -184,6 +215,21 @@ export async function* generateAnswerStream(
     profileData?: any, // Optional profile data
     visitorId?: string
 ): AsyncGenerator<string> {
+    // Server-side allowance check (authoritative)
+    try {
+        if (visitorId) {
+            const allowance = await checkAllowance(visitorId);
+            if (!allowance.allowed) {
+                const err: any = new Error('Quota exceeded');
+                err.status = 429;
+                throw err;
+            }
+        }
+    } catch (e) {
+        if ((e as any)?.status === 429) throw e;
+        console.error('Allowance check failed, allowing stream by default:', e);
+    }
+
     // Track analytics
     try {
         // Enable tracking in development for testing

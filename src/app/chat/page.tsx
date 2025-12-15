@@ -6,15 +6,21 @@ import { RepoLayout } from "@/components/RepoLayout";
 import { Loader2, AlertCircle, ArrowLeft, Github, Search } from "lucide-react";
 import type { GitHubRepo } from "@/lib/types";
 import Link from "next/link";
+import FreeChat from '@/components/FreeChat';
 
-export default async function ChatPage({
-    searchParams,
-}: {
-    searchParams: Promise<{ q?: string }>;
-}) {
-    const { q: query } = await searchParams;
+export default async function ChatPage({ searchParams }: { searchParams: any }) {
+    const params = await searchParams;
+    const query = params?.q;
 
     if (!query) {
+        // If the page was opened after billing success the client may include
+        // a `welcome` param (e.g. /chat?welcome=1). In that case render the
+        // FreeChat interface so the user can start chatting immediately.
+        const welcome = params?.welcome;
+        if (welcome) {
+            return <FreeChat />;
+        }
+
         return (
             <div className="flex flex-col items-center justify-center h-screen gap-4" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
                 <Search className="w-12 h-12" style={{ color: 'var(--muted)' }} />

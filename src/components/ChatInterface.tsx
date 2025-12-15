@@ -268,6 +268,31 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
             return;
         }
 
+        // Ensure visitor has quota before continuing
+        try {
+            let visitorId = localStorage.getItem("visitor_id");
+            let visitorWasJustCreated = false;
+            if (!visitorId) {
+                visitorId = crypto.randomUUID();
+                localStorage.setItem("visitor_id", visitorId);
+                visitorWasJustCreated = true;
+            }
+
+            const checkRes = await fetch(`/api/billing/check?visitorId=${encodeURIComponent(visitorId)}`);
+            const checkData = await checkRes.json();
+            if (!checkData.allowed && !visitorWasJustCreated) {
+                // Store current URL so we can return after payment
+                const returnUrl = window.location.pathname + window.location.search;
+                localStorage.setItem('checkout_return_url', returnUrl);
+                // Redirect user to pricing screen
+                window.location.href = `/pricing?visitorId=${encodeURIComponent(visitorId)}`;
+                return;
+            }
+        } catch (err) {
+            // On error, allow the request but log it
+            console.warn('Billing check failed, allowing request by default', err);
+        }
+
         setShowSuggestions(false);
 
         // Extract file paths from input (format: /path/to/file)

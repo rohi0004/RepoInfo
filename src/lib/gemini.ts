@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Helper to get a fresh model instance
-function getModel(modelName: string = "gemini-1.5-flash") {
+function getModel(modelName: string = "gemini-1.5-pro") {
   const apiKey = process.env.GEMINI_API_KEY || "";
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY environment variable is not set");
@@ -10,6 +10,212 @@ function getModel(modelName: string = "gemini-1.5-flash") {
   return genAI.getGenerativeModel({
     model: modelName,
   });
+}
+
+// Safe wrapper that attempts generateContent with multiple model name fallbacks
+export async function safeGenerateContent(prompt: string, preferredModel?: string) {
+  const tried: string[] = [];
+  const candidates = [] as string[];
+  if (preferredModel) candidates.push(preferredModel);
+  // allow environment override
+  if (process.env.GEMINI_MODEL) candidates.push(process.env.GEMINI_MODEL);
+  
+  // Use current Gemini model names (as of Dec 2025)
+  const base = [
+    'gemini-2.5-flash',
+    'gemini-2.5-pro',
+  ];
+  for (const b of base) {
+    candidates.push(`models/${b}`);
+    candidates.push(b);
+  }
+
+  let lastErr: any = null;
+  const diagnostics: Record<string, { methods?: string[]; error?: string | null }> = {};
+  for (const m of candidates) {
+    if (tried.includes(m)) continue;
+    tried.push(m);
+    try {
+      const model = getModel(m);
+      // record available prototype methods for diagnostics
+      try {
+        const proto = Object.getPrototypeOf(model) || {};
+        diagnostics[m] = diagnostics[m] || {};
+        diagnostics[m].methods = Object.getOwnPropertyNames(proto).sort();
+      } catch (diagE) {
+        diagnostics[m] = diagnostics[m] || {};
+        diagnostics[m].methods = ['<unavailable>'];
+      }
+      // Try the most common generation method names and normalize the response
+      const methodCandidates = [
+        'generateContent',
+        'generateMessage',
+        'generateText',
+        'generate'
+      ];
+
+      let res: any = null;
+      let called: string | null = null;
+      let innerError: any = null;
+      for (const methodName of methodCandidates) {
+        if (typeof (model as any)[methodName] === 'function') {
+          try {
+            res = await (model as any)[methodName](prompt);
+            called = methodName;
+            break;
+          } catch (innerE) {
+            innerError = innerE;
+            // If this model doesn't support this method for this API, continue to next method
+            const msgInner = String((innerE as any)?.message || innerE);
+            if (/not found|not supported|404/i.test(msgInner)) {
+              console.warn(`Model ${m} method ${methodName} not supported: ${msgInner}`);
+              res = null;
+              continue;
+            }
+            // Other error (e.g. network, auth, API limit) - rethrow to outer catch
+            throw innerE;
+          }
+        }
+      }
+
+      if (!res) {
+        // No supported method found on this model; log and continue to next model candidate
+        console.warn(`No supported generation method found on model ${m}. Last inner error: ${innerError?.message || String(innerError)}`);
+        diagnostics[m] = diagnostics[m] || {};
+        diagnostics[m].error = innerError?.message || String(innerError) || 'No method returned result';
+        continue;
+      }
+
+      // Normalize result: ensure an object with response.text() exists
+      if (res?.response?.text && typeof res.response.text === 'function') {
+        return res;
+      }
+
+      // If result is a plain string
+      if (typeof res === 'string') {
+        return { response: { text: () => res } } as any;
+      }
+
+      // Common SDK shapes
+      // 1) res.output_text or res.outputText
+      if (res.output_text || res.outputText || res.text) {
+        const txt = res.output_text || res.outputText || res.text;
+        return { response: { text: () => String(txt) } } as any;
+      }
+
+      // 2) res.output[0].content[0].text (nested content arrays)
+      try {
+        const maybe = res.output?.[0]?.content?.[0]?.text;
+        if (maybe) return { response: { text: () => String(maybe) } } as any;
+      } catch (e) {
+        // ignore
+      }
+
+      // 3) Some SDKs return an object with `candidates` or `items`
+      const candidateText = res.candidates?.[0]?.content || res.items?.[0]?.text;
+      if (candidateText) return { response: { text: () => String(candidateText) } } as any;
+
+      // As a last resort, return the raw object but ensure .response.text() exists
+      return { response: { text: () => JSON.stringify(res) } } as any;
+      } catch (e: any) {
+      lastErr = e || lastErr;
+      // if it's a 404 or unsupported method error, continue to next candidate
+      const msg = String(e?.message || e);
+      diagnostics[m] = diagnostics[m] || {};
+      diagnostics[m].error = msg;
+      if (/not found|not supported|404/i.test(msg)) {
+        console.warn(`Model ${m} not available for generateContent: ${msg}`);
+        continue;
+      }
+      // other errors: rethrow
+      throw e;
+    }
+  }
+  // If we reach here, none of the candidates worked
+  const diagSummary = Object.entries(diagnostics).map(([k, v]) => ({ model: k, methods: v.methods?.slice(0, 20), error: v.error })).slice(0, 50);
+  const err = new Error('No available Gemini model supports generateContent. Last error: ' + (lastErr?.message || String(lastErr)) + ' | diagnostics: ' + JSON.stringify(diagSummary));
+  throw err;
+}
+
+// Safe streaming wrapper. Returns the model stream object if available.
+export async function safeGenerateContentStream(prompt: string, preferredModel?: string) {
+  const tried: string[] = [];
+  const candidates = [] as string[];
+  if (preferredModel) candidates.push(preferredModel);
+  if (process.env.GEMINI_MODEL) candidates.push(process.env.GEMINI_MODEL as string);
+  const base = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-1.0'];
+  for (const b of base) {
+    candidates.push(`models/${b}`);
+    candidates.push(b);
+  }
+
+  let lastErr: any = null;
+  for (const m of candidates) {
+    if (tried.includes(m)) continue;
+    tried.push(m);
+    try {
+      const model = getModel(m);
+      // Try stream-capable methods first
+      const streamMethods = ['generateContentStream', 'generateMessageStream', 'generateTextStream'];
+      for (const sm of streamMethods) {
+        if (typeof (model as any)[sm] === 'function') {
+          try {
+            const streamRes = await (model as any)[sm](prompt);
+            return streamRes;
+          } catch (innerE) {
+            const msgInner = String((innerE as any)?.message || innerE);
+            if (/not found|not supported|404/i.test(msgInner)) {
+              console.warn(`Model ${m} stream method ${sm} not supported: ${msgInner}`);
+              continue;
+            }
+            throw innerE;
+          }
+        }
+      }
+
+      // Fallback: call a non-stream method and wrap into a simple stream-like object
+      const nonStreamMethods = ['generateContent', 'generateMessage', 'generateText', 'generate'];
+      let out: any = null;
+      for (const nm of nonStreamMethods) {
+        if (typeof (model as any)[nm] === 'function') {
+          try {
+            out = await (model as any)[nm](prompt);
+            break;
+          } catch (innerE) {
+            const msgInner = String((innerE as any)?.message || innerE);
+            if (/not found|not supported|404/i.test(msgInner)) {
+              continue;
+            }
+            throw innerE;
+          }
+        }
+      }
+
+      if (!out) {
+        console.warn(`No stream or non-stream generation method worked for model ${m}`);
+        continue;
+      }
+
+      // Normalize non-stream output into a simple stream object with async iterator
+      const normalized = (out?.response?.text && typeof out.response.text === 'function') ? out : { response: { text: () => JSON.stringify(out) } };
+      // Return an object that supports async iteration by yielding the full text once
+      const streamLike = {
+        async *[Symbol.asyncIterator]() {
+          yield normalized.response.text();
+        }
+      } as any;
+      return streamLike;
+    } catch (e: any) {
+      lastErr = e;
+      const msg = String(e?.message || e);
+      if (/not found|not supported|404/i.test(msg)) {
+        console.warn(`Model ${m} not available for generateContentStream: ${msg}`);
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw new Error('No available Gemini model supports generateContentStream. Last error: ' + (lastErr?.message || String(lastErr)));
 }
 
 export async function generateChatResponse(
@@ -101,7 +307,7 @@ export async function analyzeFileSelection(
     `;
 
   try {
-    const result = await getModel("gemini-1.5-flash").generateContent(prompt);
+    const result = await safeGenerateContent(prompt, "gemini-1.5-pro");
     const response = result.response.text();
     const cleanResponse = response.replace(/```json/g, "").replace(/```/g, "").trim();
     const parsed = JSON.parse(cleanResponse);
@@ -305,7 +511,7 @@ export async function answerWithContext(
     Answer:
     `;
 
-  const result = await getModel().generateContent(prompt);
+  const result = await safeGenerateContent(prompt);
   return result.response.text();
 }
 
@@ -488,8 +694,7 @@ export async function* answerWithContextStream(
     Answer:
   `;
 
-  const result = await getModel().generateContentStream(prompt);
-
+  const result = await safeGenerateContentStream(prompt);
 
   for await (const chunk of result.stream) {
     const text = chunk.text();
@@ -525,7 +730,7 @@ Return ONLY the corrected Mermaid code in a markdown code block. Do not explain.
 [corrected code here]
 \`\`\``;
 
-    const result = await getModel().generateContent(prompt);
+    const result = await safeGenerateContent(prompt);
     const response = result.response.text();
 
     // Extract code from markdown block

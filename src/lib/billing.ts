@@ -26,16 +26,32 @@ export async function getVisitorUsage(visitorId: string) {
         }
         // If KV isn't configured but REDIS_URL is present, we expect analytics to be in Redis
         if (process.env.REDIS_URL) {
-            const { createClient } = await import('redis');
-            const client = createClient({ url: process.env.REDIS_URL });
-            await client.connect();
             try {
-                const data = await client.hGetAll(`visitor:${visitorId}`);
-                const queryCount = parseInt(data?.queryCount || '0');
-                const exists = Object.keys(data || {}).length > 0;
-                return { queryCount, exists };
-            } finally {
-                try { await client.disconnect(); } catch (e) { /* ignore */ }
+                const { createClient } = await import('redis');
+                const client = createClient({ 
+                    url: process.env.REDIS_URL,
+                    socket: {
+                        connectTimeout: 5000,
+                        reconnectStrategy: false
+                    }
+                });
+                
+                await Promise.race([
+                    client.connect(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connection timeout')), 5000))
+                ]);
+                
+                try {
+                    const data = await client.hGetAll(`visitor:${visitorId}`);
+                    const queryCount = parseInt(data?.queryCount || '0');
+                    const exists = Object.keys(data || {}).length > 0;
+                    return { queryCount, exists };
+                } finally {
+                    try { await client.disconnect(); } catch (e) { /* ignore */ }
+                }
+            } catch (redisError) {
+                console.warn('Redis connection failed in getVisitorUsage:', redisError);
+                // Continue without Redis
             }
         }
 
@@ -81,25 +97,41 @@ export async function getBillingData(visitorId: string) {
             console.log(`📊 getBillingData(${visitorId}):`, JSON.stringify(result));
             return result;
         }
-        // Redis fallback
+        // Redis fallback with timeout
         if (process.env.REDIS_URL) {
-            const { createClient } = await import('redis');
-            const client = createClient({ url: process.env.REDIS_URL });
-            await client.connect();
             try {
-                const data = await client.hGetAll(`billing:visitor:${visitorId}`);
-                const exists = Object.keys(data || {}).length > 0;
-                const result = {
-                    plan: data?.plan || null,
-                    extraQueries: parseInt(data?.extraQueries || '0') || 0,
-                    activeUntil: data?.activeUntil ? parseInt(data.activeUntil) : null,
-                    unlimited: data?.unlimited === '1' || false,
-                    exists
-                };
-                console.log(`📊 getBillingData(${visitorId}) [Redis]:`, JSON.stringify(result));
-                return result;
-            } finally {
-                try { await client.disconnect(); } catch (e) { /* ignore */ }
+                const { createClient } = await import('redis');
+                const client = createClient({ 
+                    url: process.env.REDIS_URL,
+                    socket: {
+                        connectTimeout: 5000, // 5 second timeout
+                        reconnectStrategy: false // Don't retry on connection failure
+                    }
+                });
+                
+                await Promise.race([
+                    client.connect(),
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Redis connection timeout')), 5000))
+                ]);
+                
+                try {
+                    const data = await client.hGetAll(`billing:visitor:${visitorId}`);
+                    const exists = Object.keys(data || {}).length > 0;
+                    const result = {
+                        plan: data?.plan || null,
+                        extraQueries: parseInt(data?.extraQueries || '0') || 0,
+                        activeUntil: data?.activeUntil ? parseInt(data.activeUntil) : null,
+                        unlimited: data?.unlimited === '1' || false,
+                        exists
+                    };
+                    console.log(`📊 getBillingData(${visitorId}) [Redis]:`, JSON.stringify(result));
+                    return result;
+                } finally {
+                    try { await client.disconnect(); } catch (e) { /* ignore */ }
+                }
+            } catch (redisError) {
+                console.warn('Redis connection failed, continuing without cache:', redisError);
+                // Continue execution without Redis - return default values
             }
         }
     } catch (e) {

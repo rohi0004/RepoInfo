@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { generateAnswer } from '@/app/actions';
 
-export const maxDuration = 60; // Maximum duration for serverless function
+export const maxDuration = 26; // Maximum duration for Netlify free tier (26s), Pro allows 60s
 export const dynamic = 'force-dynamic'; // Disable static optimization
 
 export async function POST(req: Request) {

@@ -90,8 +90,6 @@ export async function analyzeCodeQuality(
 
     // 2. AI Qualitative Analysis (Zero-Cost Linter)
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
         const prompt = `
       You are a senior code reviewer. Analyze this code file (${filename}) for quality issues.
       
@@ -119,18 +117,11 @@ export async function analyzeCodeQuality(
       }
     `;
 
-        let text: string = '';
-        try {
-            const result = await safeGenerateContent(prompt, 'kwaipilot/kat-coder-pro:free');
-            text = result.response.text();
-        } catch (e) {
-            console.warn('safeGenerateContent failed, falling back to model.generateContent', e);
-            const result = await model.generateContent(prompt);
-            text = result.response.text();
-        }
+        const result = await safeGenerateContent(prompt, 'kwaipilot/kat-coder-pro:free');
+        const text = result.response.text();
         
         if (!text) {
-            throw new Error('Failed to get response from Gemini AI');
+            throw new Error('Failed to get response from OpenRouter AI');
         }
         
         const jsonMatch = text.match(/\{[\s\S]*\}/);

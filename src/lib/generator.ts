@@ -16,14 +16,8 @@ export async function generateDocumentation(
       ${code}
     `;
 
-        try {
-            const result = await safeGenerateContent(prompt);
-            return result.response.text().replace(/```\w*\n/g, '').replace(/```$/g, '');
-        } catch (e) {
-            console.warn('safeGenerateContent failed, falling back to model.generateContent', e);
-            const result = await model.generateContent(prompt);
-            return result.response.text().replace(/```\w*\n/g, '').replace(/```$/g, '');
-        }
+        const result = await safeGenerateContent(prompt);
+        return result.response.text().replace(/```\w*\n/g, '').replace(/```$/g, '');
     } catch (error) {
         console.error('Doc generation failed:', error);
         return 'Failed to generate documentation.';
@@ -38,8 +32,6 @@ export async function generateTests(
     framework: 'jest' | 'vitest' = 'jest'
 ): Promise<string> {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
         const prompt = `
       Generate ${framework} unit tests for the following code.
       Include imports and mock setups if necessary.
@@ -49,13 +41,8 @@ export async function generateTests(
       ${code}
     `;
 
-        try {
-            const result = await safeGenerateContent(prompt);
-            return result.response.text().replace(/```\w*\n/g, '').replace(/```$/g, '');
-        } catch (e) {
-            console.error('Test generation failed:', e);
-            return '// Failed to generate tests.';
-        }
+        const result = await safeGenerateContent(prompt);
+        return result.response.text().replace(/```\w*\n/g, '').replace(/```$/g, '');
     } catch (error) {
         console.error('Test generation failed:', error);
         return '// Failed to generate tests.';
@@ -89,14 +76,10 @@ export async function suggestRefactoring(code: string): Promise<string> {
       ${code}
     `;
 
-        try {
-            const result = await safeGenerateContent(prompt);
-            return result.response.text();
-        } catch (e) {
-            console.error('Refactoring suggestion failed:', e);
-            return 'Failed to generate suggestions.';
-        }
+        const result = await safeGenerateContent(prompt);
+        return result.response.text();
     } catch (error) {
+        console.error('Refactoring suggestion failed:', error);
         return 'Failed to generate suggestions.';
     }
 }

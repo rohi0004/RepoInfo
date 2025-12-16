@@ -280,7 +280,20 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
             const checkRes = await fetch(`/api/billing/check?visitorId=${encodeURIComponent(visitorId)}`);
             const checkData = await checkRes.json();
-            if (!checkData.allowed && !visitorWasJustCreated) {
+            
+            // Show remaining queries info
+            if (checkData.remaining !== undefined && checkData.remaining >= 0 && checkData.remaining <= 2) {
+                toast.info(`${checkData.remaining} free ${checkData.remaining === 1 ? 'query' : 'queries'} remaining`, {
+                    description: checkData.remaining === 0 ? "Upgrade to continue" : "Consider upgrading for unlimited queries",
+                    duration: 4000,
+                });
+            }
+            
+            if (!checkData.allowed) {
+                toast.error("Query limit reached", {
+                    description: "You've used all 5 free queries. Upgrade to continue!",
+                    duration: 5000,
+                });
                 // Store current URL so we can return after payment
                 const returnUrl = window.location.pathname + window.location.search;
                 localStorage.setItem('checkout_return_url', returnUrl);

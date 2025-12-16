@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { checkAllowance } from '@/lib/billing';
+import { checkAllowance } from '@/lib/billing-mongodb';
 
 export async function GET(req: Request) {
     try {

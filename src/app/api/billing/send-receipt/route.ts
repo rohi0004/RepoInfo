@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getStripe, sendBillingEmail } from '@/lib/billing';
+import { getStripe, sendBillingEmail } from '@/lib/billing-mongodb';
 
 export async function POST(req: Request) {
     try {

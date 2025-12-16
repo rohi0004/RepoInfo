@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getStripe } from '@/lib/billing';
+import { getStripe } from '@/lib/billing-mongodb';
 
 export async function POST(req: Request) {
     try {

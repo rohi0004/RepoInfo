@@ -1,12 +1,23 @@
 "use client";
-import { useState } from 'react';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { CheckCircle, AlertCircle, Search, Trash2, Edit, DollarSign, Users, Database } from 'lucide-react';
 
 export default function GrantAccessPage() {
     const [visitorId, setVisitorId] = useState('');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
     const [error, setError] = useState<string | null>(null);
+    
+    // New state for database management
+    const [allVisitors, setAllVisitors] = useState<any[]>([]);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedVisitor, setSelectedVisitor] = useState<any>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [editForm, setEditForm] = useState({
+        plan: '',
+        extraQueries: 0,
+        unlimited: false
+    });
 
     const grantUnlimited = async () => {
         if (!visitorId.trim()) {

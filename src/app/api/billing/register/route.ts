@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { initVisitor } from '@/lib/billing';
+import { initVisitor } from '@/lib/billing-mongodb';
 
 export async function POST(req: Request) {
     try {

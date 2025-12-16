@@ -1,5 +1,9 @@
 {
-  "visitors": ["test-visitor-1", "test-visitor-2"],
+  "visitors": [
+    "test-visitor-1",
+    "test-visitor-2",
+    "65891f41-ce3a-4156-8893-cb5cc90b9cb8"
+  ],
   "visitorData": [
     [
       "test-visitor-1",
@@ -21,6 +25,17 @@
         "device": "mobile",
         "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)",
         "queryCount": 1
+      }
+    ],
+    [
+      "65891f41-ce3a-4156-8893-cb5cc90b9cb8",
+      {
+        "firstSeen": 1765874919802,
+        "lastSeen": 1765874919802,
+        "country": "Unknown",
+        "device": "unknown",
+        "userAgent": "",
+        "queryCount": 0
       }
     ]
   ],

@@ -6,7 +6,7 @@ import { scanFiles, getScanSummary, groupBySeverity, type SecurityFinding, type 
 import { analyzeCodeWithGemini } from "@/lib/gemini-security";
 import { countTokens } from "@/lib/tokens";
 import type { StreamUpdate } from "@/lib/streaming-types";
-import { checkAllowance } from '@/lib/billing';
+import { checkAllowance, incrementVisitorUsage } from '@/lib/billing-mongodb';
 
 export async function fetchGitHubData(input: string) {
     // Input format: "username" or "owner/repo"
@@ -191,7 +191,7 @@ export async function generateAnswer(
             const country = headersList.get("x-vercel-ip-country") || "Unknown";
             const isMobile = /mobile/i.test(userAgent);
 
-            await trackEvent(visitorId, 'query', {
+            await incrementVisitorUsage(visitorId, {
                 country,
                 device: isMobile ? 'mobile' : 'desktop',
                 userAgent
@@ -239,7 +239,7 @@ export async function* generateAnswerStream(
             const country = headersList.get("x-vercel-ip-country") || "Unknown";
             const isMobile = /mobile/i.test(userAgent);
 
-            await trackEvent(visitorId, 'query', {
+            await incrementVisitorUsage(visitorId, {
                 country,
                 device: isMobile ? 'mobile' : 'desktop',
                 userAgent
@@ -256,7 +256,7 @@ export async function* generateAnswerStream(
 }
 
 import { headers } from "next/headers";
-import { trackEvent } from "@/lib/analytics";
+// trackEvent now imported from billing-mongo at top of file
 
 export async function processProfileQuery(
     query: string,
@@ -278,7 +278,7 @@ export async function processProfileQuery(
             const country = headersList.get("x-vercel-ip-country") || "Unknown";
             const isMobile = /mobile/i.test(userAgent);
 
-            await trackEvent(visitorId, 'query', {
+            await incrementVisitorUsage(visitorId, {
                 country,
                 device: isMobile ? 'mobile' : 'desktop',
                 userAgent

@@ -30,16 +30,17 @@ export default function BillingSuccessPage() {
                 // Automatically grant unlimited access (fallback if webhook doesn't fire)
                 const visitorId = data.session?.metadata?.visitorId;
                 const planId = data.session?.metadata?.planId;
-                if (visitorId) {
+                if (visitorId && session_id) {
                     console.log('🔄 Auto-granting unlimited access for visitor:', visitorId, 'plan:', planId);
                     try {
-                        const grantRes = await fetch('/api/billing/test-unlimited', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ visitorId, planId })
+                        const grantRes = await fetch(`/api/billing/process-checkout?session_id=${encodeURIComponent(session_id)}&visitorId=${encodeURIComponent(visitorId)}`, {
+                            method: 'POST'
                         });
                         const grantData = await grantRes.json();
-                        console.log('✅ Unlimited access granted automatically:', grantData);
+                        console.log('✅ Unlimited access granted:', grantData);
+                        if (!grantData.success) {
+                            console.warn('Grant may have failed:', grantData);
+                        }
                     } catch (e) {
                         console.warn('Failed to auto-grant unlimited:', e);
                     }

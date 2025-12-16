@@ -13,7 +13,7 @@ export async function POST(req: Request) {
         console.log(`🎯 Granting unlimited access for visitor ${visitorId}, plan: ${planId || 'auto'}`);
 
         // Initialize visitor first
-        const { initVisitor, grantExtraQueries } = await import('@/lib/billing');
+        const { initVisitor, grantExtraQueries } = await import('@/lib/billing-mongodb');
         await initVisitor(visitorId);
         console.log(`✅ Visitor ${visitorId} initialized`);
 
@@ -24,13 +24,18 @@ export async function POST(req: Request) {
             grant = 1000;
         }
 
-        // Grant extra queries
+        // Grant extra queries AND set unlimited flag
         if (grant > 0) {
-            await grantExtraQueries(visitorId, grant);
-            console.log(`✅ Granted ${grant} queries to visitor ${visitorId}`);
+            await grantExtraQueries(visitorId, grant, true); // true = set unlimited
+            console.log(`✅ Granted ${grant} queries to visitor ${visitorId} with unlimited=true`);
         }
 
-        // Set unlimited in Redis
+        // Verify MongoDB was updated
+        const { getBillingData, checkAllowance } = await import('@/lib/billing-mongodb');
+        const billingCheck = await checkAllowance(visitorId);
+        console.log(`🔍 MongoDB billing check:`, JSON.stringify(billingCheck));
+
+        // Set unlimited in Redis (if configured)
         if (process.env.REDIS_URL) {
             const { createClient } = await import('redis');
             const client = createClient({ url: process.env.REDIS_URL });
@@ -49,12 +54,7 @@ export async function POST(req: Request) {
                 
                 // Verify it was set
                 const verify = await client.hGetAll(key);
-                console.log(`🔍 Verification:`, verify);
-                
-                // Double-check the billing data is readable
-                const { getBillingData, checkAllowance } = await import('@/lib/billing');
-                const billingCheck = await checkAllowance(visitorId);
-                console.log(`🔍 Final allowance check:`, JSON.stringify(billingCheck));
+                console.log(`🔍 Redis verification:`, verify);
                 
                 return NextResponse.json({ 
                     success: true, 
@@ -66,9 +66,16 @@ export async function POST(req: Request) {
             } finally {
                 try { await client.disconnect(); } catch (e) {}
             }
+        } else {
+            // No Redis, using MongoDB only
+            console.log(`📊 Using MongoDB only (no Redis configured)`);
+            return NextResponse.json({ 
+                success: true, 
+                visitorId,
+                unlimited: true,
+                allowanceCheck: billingCheck
+            });
         }
-
-        return NextResponse.json({ error: 'Redis not configured' }, { status: 500 });
     } catch (e: any) {
         console.error('Grant unlimited error', e);
         return NextResponse.json({ error: e.message }, { status: 500 });

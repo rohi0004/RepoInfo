@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getStripe } from '@/lib/billing';
+import { getStripe } from '@/lib/billing-mongodb';
 
 // PDF generation using pdfkit
 export async function GET(req: Request) {

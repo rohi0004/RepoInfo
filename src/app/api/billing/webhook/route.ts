@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getStripe, grantExtraQueries } from '@/lib/billing';
+import { getStripe, grantExtraQueries } from '@/lib/billing-mongodb';
 
 export async function POST(req: Request) {
     const stripe = getStripe();
@@ -44,15 +44,18 @@ export async function POST(req: Request) {
                     console.log(`🎯 Webhook processing payment for visitor ${visitorId}, plan ${planId}, unlimited=${setUnlimited}`);
                     
                     // Initialize visitor record first to ensure it exists
-                    const { initVisitor } = await import('@/lib/billing');
+                    const { initVisitor } = await import('@/lib/billing-mongodb');
                     await initVisitor(visitorId);
                     console.log(`✅ Visitor ${visitorId} initialized`);
                     
-                    // Optionally grant extra queries (keeps compatibility)
-                    if (grant > 0) {
-                        await grantExtraQueries(visitorId, grant);
-                        console.log(`✅ Granted ${grant} queries to visitor ${visitorId}`);
-                    }
+                    // Grant extra queries AND set unlimited flag in MongoDB
+                    await grantExtraQueries(visitorId, grant, setUnlimited);
+                    console.log(`✅ Granted ${grant} queries to visitor ${visitorId} with unlimited=${setUnlimited}`);
+                    
+                    // Verify it was set in MongoDB
+                    const { checkAllowance } = await import('@/lib/billing-mongodb');
+                    const verify = await checkAllowance(visitorId);
+                    console.log(`🔍 MongoDB verification after webhook:`, JSON.stringify(verify));
 
                     // Save plan record - use kv directly to store plan name and active timestamp
                     try {
@@ -85,7 +88,7 @@ export async function POST(req: Request) {
                     // Send a billing email if SMTP is configured and we have an email
                     try {
                         if (customerEmail) {
-                            const { sendBillingEmail } = await import('@/lib/billing');
+                            const { sendBillingEmail } = await import('@/lib/billing-mongodb');
                             const amountLabel = session.amount_total ? `$${(session.amount_total / 100).toFixed(2)}` : '';
                             await sendBillingEmail(customerEmail, visitorId, planId, amountLabel);
                         }

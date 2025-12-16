@@ -25,9 +25,7 @@ export default function BillingSuccessPage() {
                     setLoading(false);
                     return;
                 }
-                setSession(data.session);
-                
-                // Automatically grant unlimited access (fallback if webhook doesn't fire)
+                // Automatically grant unlimited access BEFORE setting session (to prevent premature redirect)
                 const visitorId = data.session?.metadata?.visitorId;
                 const planId = data.session?.metadata?.planId;
                 if (visitorId && session_id) {
@@ -40,11 +38,24 @@ export default function BillingSuccessPage() {
                         console.log('✅ Unlimited access granted:', grantData);
                         if (!grantData.success) {
                             console.warn('Grant may have failed:', grantData);
+                            setError('Payment processed but failed to activate unlimited access. Please contact support.');
+                            setLoading(false);
+                            return;
                         }
+                        // Set a flag to skip billing check for a few minutes after payment
+                        localStorage.setItem('payment_just_completed', Date.now().toString());
+                        // Wait longer to ensure database replication across all nodes
+                        await new Promise(resolve => setTimeout(resolve, 2000));
                     } catch (e) {
                         console.warn('Failed to auto-grant unlimited:', e);
+                        setError('Payment processed but failed to activate unlimited access. Please contact support.');
+                        setLoading(false);
+                        return;
                     }
                 }
+                
+                // Now set session which will trigger redirect
+                setSession(data.session);
             } catch (e: any) {
                 setError(e?.message || 'Failed to fetch session');
             } finally {

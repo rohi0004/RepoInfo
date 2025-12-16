@@ -220,32 +220,44 @@ export function ProfileChatInterface({ profile, profileReadme, repoReadmes }: Pr
             return;
         }
 
-            // Ensure visitor has quota before continuing
-        try {
-            let visitorId = localStorage.getItem("visitor_id");
-            let visitorWasJustCreated = false;
-            if (!visitorId) {
-                visitorId = crypto.randomUUID();
-                localStorage.setItem("visitor_id", visitorId);
-                visitorWasJustCreated = true;
-            }
+        // Skip billing check if user just returned from payment (welcome=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const skipBillingCheck = urlParams.has('welcome');
+        if (skipBillingCheck) {
+            // Clear the welcome param after first use
+            urlParams.delete('welcome');
+            const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, '', newUrl);
+        }
 
-            const checkRes = await fetch(`/api/billing/check?visitorId=${encodeURIComponent(visitorId)}`);
-            const checkData = await checkRes.json();
-            // If the visitor is brand new (created this session) or the billing
-            // backend has no record of this visitor, avoid redirecting to pricing.
-            // This prevents redirect loops for incognito/new users while preserving
-            // protection for returning visitors that have exceeded their quota.
-            const visitorKnown = checkData.visitorExists === true;
-            if (!checkData.allowed && visitorKnown && !visitorWasJustCreated) {
-                // Store current URL so we can return after payment
-                const returnUrl = window.location.pathname + window.location.search;
-                localStorage.setItem('checkout_return_url', returnUrl);
-                window.location.href = `/pricing?visitorId=${encodeURIComponent(visitorId)}`;
-                return;
+        // Ensure visitor has quota before continuing (skip if just paid)
+        if (!skipBillingCheck) {
+            try {
+                let visitorId = localStorage.getItem("visitor_id");
+                let visitorWasJustCreated = false;
+                if (!visitorId) {
+                    visitorId = crypto.randomUUID();
+                    localStorage.setItem("visitor_id", visitorId);
+                    visitorWasJustCreated = true;
+                }
+
+                const checkRes = await fetch(`/api/billing/check?visitorId=${encodeURIComponent(visitorId)}`);
+                const checkData = await checkRes.json();
+                // If the visitor is brand new (created this session) or the billing
+                // backend has no record of this visitor, avoid redirecting to pricing.
+                // This prevents redirect loops for incognito/new users while preserving
+                // protection for returning visitors that have exceeded their quota.
+                const visitorKnown = checkData.visitorExists === true;
+                if (!checkData.allowed && visitorKnown && !visitorWasJustCreated) {
+                    // Store current URL so we can return after payment
+                    const returnUrl = window.location.pathname + window.location.search;
+                    localStorage.setItem('checkout_return_url', returnUrl);
+                    window.location.href = `/pricing?visitorId=${encodeURIComponent(visitorId)}`;
+                    return;
+                }
+            } catch (err) {
+                console.warn('Billing check failed, allowing request by default', err);
             }
-        } catch (err) {
-            console.warn('Billing check failed, allowing request by default', err);
         }
 
         setShowSuggestions(false);

@@ -268,42 +268,54 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
             return;
         }
 
-        // Ensure visitor has quota before continuing
-        try {
-            let visitorId = localStorage.getItem("visitor_id");
-            let visitorWasJustCreated = false;
-            if (!visitorId) {
-                visitorId = crypto.randomUUID();
-                localStorage.setItem("visitor_id", visitorId);
-                visitorWasJustCreated = true;
-            }
+        // Skip billing check if user just returned from payment (welcome=1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const skipBillingCheck = urlParams.has('welcome');
+        if (skipBillingCheck) {
+            // Clear the welcome param after first use
+            urlParams.delete('welcome');
+            const newUrl = window.location.pathname + (urlParams.toString() ? '?' + urlParams.toString() : '');
+            window.history.replaceState({}, '', newUrl);
+        }
 
-            const checkRes = await fetch(`/api/billing/check?visitorId=${encodeURIComponent(visitorId)}`);
-            const checkData = await checkRes.json();
-            
-            // Show remaining queries info
-            if (checkData.remaining !== undefined && checkData.remaining >= 0 && checkData.remaining <= 2) {
-                toast.info(`${checkData.remaining} free ${checkData.remaining === 1 ? 'query' : 'queries'} remaining`, {
-                    description: checkData.remaining === 0 ? "Upgrade to continue" : "Consider upgrading for unlimited queries",
-                    duration: 4000,
-                });
+        // Ensure visitor has quota before continuing (skip if just paid)
+        if (!skipBillingCheck) {
+            try {
+                let visitorId = localStorage.getItem("visitor_id");
+                let visitorWasJustCreated = false;
+                if (!visitorId) {
+                    visitorId = crypto.randomUUID();
+                    localStorage.setItem("visitor_id", visitorId);
+                    visitorWasJustCreated = true;
+                }
+
+                const checkRes = await fetch(`/api/billing/check?visitorId=${encodeURIComponent(visitorId)}`);
+                const checkData = await checkRes.json();
+                
+                // Show remaining queries info
+                if (checkData.remaining !== undefined && checkData.remaining >= 0 && checkData.remaining <= 2) {
+                    toast.info(`${checkData.remaining} free ${checkData.remaining === 1 ? 'query' : 'queries'} remaining`, {
+                        description: checkData.remaining === 0 ? "Upgrade to continue" : "Consider upgrading for unlimited queries",
+                        duration: 4000,
+                    });
+                }
+                
+                if (!checkData.allowed) {
+                    toast.error("Query limit reached", {
+                        description: "You've used all 5 free queries. Upgrade to continue!",
+                        duration: 5000,
+                    });
+                    // Store current URL so we can return after payment
+                    const returnUrl = window.location.pathname + window.location.search;
+                    localStorage.setItem('checkout_return_url', returnUrl);
+                    // Redirect user to pricing screen
+                    window.location.href = `/pricing?visitorId=${encodeURIComponent(visitorId)}`;
+                    return;
+                }
+            } catch (err) {
+                // On error, allow the request but log it
+                console.warn('Billing check failed, allowing request by default', err);
             }
-            
-            if (!checkData.allowed) {
-                toast.error("Query limit reached", {
-                    description: "You've used all 5 free queries. Upgrade to continue!",
-                    duration: 5000,
-                });
-                // Store current URL so we can return after payment
-                const returnUrl = window.location.pathname + window.location.search;
-                localStorage.setItem('checkout_return_url', returnUrl);
-                // Redirect user to pricing screen
-                window.location.href = `/pricing?visitorId=${encodeURIComponent(visitorId)}`;
-                return;
-            }
-        } catch (err) {
-            // On error, allow the request but log it
-            console.warn('Billing check failed, allowing request by default', err);
         }
 
         setShowSuggestions(false);
@@ -404,17 +416,17 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
                 for await (const chunk of stream) {
                     fullResponse += chunk;
+                    // Update both streaming message AND the actual message in real-time
                     setCurrentStreamingMessage(fullResponse);
+                    setMessages((prev) =>
+                        prev.map((msg) =>
+                            msg.id === botMsg.id ? { ...msg, content: fullResponse } : msg
+                        )
+                    );
                     console.log('📨 Received chunk, total length:', fullResponse.length);
                 }
 
                 console.log('✅ AI response complete, length:', fullResponse.length);
-                
-                setMessages((prev) =>
-                    prev.map((msg) =>
-                        msg.id === botMsg.id ? { ...msg, content: fullResponse } : msg
-                    )
-                );
 
                 setCurrentStreamingMessage("");
                 setLoading(false);
@@ -551,6 +563,16 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
             // Step 3: Generate response
             setStreamingStatus({ message: "Generating response...", progress: 70 });
+            
+            // Create bot message immediately so user sees it's responding
+            const modelMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "model",
+                content: "Thinking...",
+                relevantFiles,
+            };
+            setMessages((prev) => [...prev, modelMsg]);
+
             // Get visitor ID
             let visitorId = localStorage.getItem("visitor_id");
             if (!visitorId) {
@@ -567,14 +589,12 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                 visitorId
             );
 
-            const modelMsg: Message = {
-                id: (Date.now() + 1).toString(),
-                role: "model",
-                content: answer,
-                relevantFiles,
-            };
-
-            setMessages((prev) => [...prev, modelMsg]);
+            // Update the message with the actual response
+            setMessages((prev) => 
+                prev.map((msg) => 
+                    msg.id === modelMsg.id ? { ...msg, content: answer } : msg
+                )
+            );
             setStreamingStatus(null);
         } catch (error: any) {
             console.error(error);

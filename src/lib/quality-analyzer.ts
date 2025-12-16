@@ -121,15 +121,20 @@ export async function analyzeCodeQuality(
       }
     `;
 
-        let text: string | undefined;
+        let text: string = '';
         try {
-            const result = await safeGenerateContent(prompt, 'gemini-1.5-pro');
+            const result = await safeGenerateContent(prompt, 'gemini-2.5-flash');
             text = result.response.text();
         } catch (e) {
             console.warn('safeGenerateContent failed, falling back to model.generateContent', e);
             const result = await model.generateContent(prompt);
             text = result.response.text();
         }
+        
+        if (!text) {
+            throw new Error('Failed to get response from Gemini AI');
+        }
+        
         const jsonMatch = text.match(/\{[\s\S]*\}/);
 
         if (jsonMatch) {

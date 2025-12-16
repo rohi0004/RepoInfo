@@ -1,11 +1,9 @@
 // import { parse } from '@babel/parser';
 // import traverseModule from '@babel/traverse';
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { safeGenerateContent } from "./gemini";
 import OpenAI from "openai";
 
 // const traverse = traverseModule.default || traverseModule;
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 const deepSeekApiKey = process.env.DEEPSEEK_API_KEY;
 const deepSeek = deepSeekApiKey ? new OpenAI({
     apiKey: deepSeekApiKey,
@@ -123,7 +121,7 @@ export async function analyzeCodeQuality(
 
         let text: string = '';
         try {
-            const result = await safeGenerateContent(prompt, 'gemini-2.5-flash');
+            const result = await safeGenerateContent(prompt, 'kwaipilot/kat-coder-pro:free');
             text = result.response.text();
         } catch (e) {
             console.warn('safeGenerateContent failed, falling back to model.generateContent', e);

@@ -1,7 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import { safeGenerateContent } from "./gemini";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 /**
  * Generate documentation for code
@@ -11,8 +8,6 @@ export async function generateDocumentation(
     type: 'jsdoc' | 'readme' | 'comments' = 'jsdoc'
 ): Promise<string> {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
         const prompt = `
       Generate ${type.toUpperCase()} documentation for the following code.
       Return ONLY the documentation code block, no markdown wrappers if possible, or just the content.
@@ -22,7 +17,7 @@ export async function generateDocumentation(
     `;
 
         try {
-            const result = await safeGenerateContent(prompt, 'gemini-1.5-pro');
+            const result = await safeGenerateContent(prompt);
             return result.response.text().replace(/```\w*\n/g, '').replace(/```$/g, '');
         } catch (e) {
             console.warn('safeGenerateContent failed, falling back to model.generateContent', e);
@@ -55,12 +50,11 @@ export async function generateTests(
     `;
 
         try {
-            const result = await safeGenerateContent(prompt, 'gemini-1.5-pro');
+            const result = await safeGenerateContent(prompt);
             return result.response.text().replace(/```\w*\n/g, '').replace(/```$/g, '');
         } catch (e) {
-            console.warn('safeGenerateContent failed, falling back to model.generateContent', e);
-            const result = await model.generateContent(prompt);
-            return result.response.text().replace(/```\w*\n/g, '').replace(/```$/g, '');
+            console.error('Test generation failed:', e);
+            return '// Failed to generate tests.';
         }
     } catch (error) {
         console.error('Test generation failed:', error);
@@ -73,8 +67,6 @@ export async function generateTests(
  */
 export async function suggestRefactoring(code: string): Promise<string> {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
-
         const prompt = `
       Suggest a refactoring for this code to improve readability and performance.
       
@@ -98,12 +90,11 @@ export async function suggestRefactoring(code: string): Promise<string> {
     `;
 
         try {
-            const result = await safeGenerateContent(prompt, 'gemini-1.5-pro');
+            const result = await safeGenerateContent(prompt);
             return result.response.text();
         } catch (e) {
-            console.warn('safeGenerateContent failed, falling back to model.generateContent', e);
-            const result = await model.generateContent(prompt);
-            return result.response.text();
+            console.error('Refactoring suggestion failed:', e);
+            return 'Failed to generate suggestions.';
         }
     } catch (error) {
         return 'Failed to generate suggestions.';

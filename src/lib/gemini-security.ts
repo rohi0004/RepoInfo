@@ -1,7 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { safeGenerateContent } from "./gemini";
 import type { SecurityFinding } from "./security-scanner";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
 /**
  * Gemini function declarations for security analysis
@@ -93,10 +91,8 @@ export async function analyzeCodeWithGemini(
     files: Array<{ path: string; content: string }>
 ): Promise<SecurityFinding[]> {
     try {
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-pro',
-            tools: [{ functionDeclarations: securityAnalysisFunctions as any }]
-        });
+        // Note: OpenRouter doesn't support function calling like Gemini
+        // We'll use prompt-based extraction instead
 
         // Build analysis prompt
         const filesContext = files.map(f => `
@@ -129,42 +125,54 @@ Only use reporting functions for TRUE vulnerabilities where:
 Be extremely conservative. False alarms erode trust.
 `;
 
-        const result = await model.generateContent(prompt);
-        const response = result.response;
+        // Use OpenRouter instead - ask for JSON output
+        const jsonPrompt = prompt + `\n\nRETURN A JSON ARRAY OF FINDINGS. Each finding should have: type, file, line, code_snippet, severity, explanation.\nExample: [{"type": "sql_injection", "file": "auth.ts", "severity": "critical", "explanation": "..."}]`;
+        
+        const result = await safeGenerateContent(jsonPrompt);
+        const responseText = result.response.text();
+        
+        // Parse JSON from response
+        let parsedFindings: any[] = [];
+        try {
+            const jsonMatch = responseText.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+                parsedFindings = JSON.parse(jsonMatch[0]);
+            }
+        } catch (e) {
+            console.error('Failed to parse security findings JSON:', e);
+            return [];
+        }
 
-        // Extract function calls
-        const functionCalls = response.functionCalls?.() || [];
-
-        const findings: SecurityFinding[] = functionCalls
-            .map((call: any) => {
-                const args = call.args as any;
+        const findings: SecurityFinding[] = parsedFindings
+            .map((finding: any) => {
                 let title = '';
                 let cwe = '';
                 let recommendation = '';
 
-                switch (call.name) {
-                    case 'report_sql_injection':
+                switch (finding.type) {
+                    case 'sql_injection':
                         title = 'SQL Injection Vulnerability';
                         cwe = 'CWE-89';
                         recommendation = 'Use parameterized queries or prepared statements. Never concatenate user input into SQL.';
                         break;
-                    case 'report_xss':
+                    case 'xss':
                         title = 'Cross-Site Scripting (XSS)';
                         cwe = 'CWE-79';
                         recommendation = 'Sanitize user input and use secure DOM manipulation methods. Avoid innerHTML with user data.';
                         break;
-                    case 'report_auth_issue':
+                    case 'auth_issue':
                         title = 'Authentication/Authorization Issue';
                         cwe = 'CWE-287';
                         recommendation = 'Implement proper authentication checks and use established auth libraries.';
                         break;
-                    case 'report_injection':
-                        title = `${args.injection_type} Injection`;
-                        cwe = args.injection_type === 'command' ? 'CWE-78' : 'CWE-22';
+                    case 'injection':
+                    case 'command_injection':
+                        title = `Command Injection`;
+                        cwe = 'CWE-78';
                         recommendation = 'Validate and sanitize all user input. Use safe APIs that don\'t accept shell commands.';
                         break;
-                    case 'report_crypto_issue':
-                        title = `Cryptography Issue: ${args.issue_type}`;
+                    case 'crypto_issue':
+                        title = `Cryptography Issue`;
                         cwe = 'CWE-327';
                         recommendation = 'Use modern cryptographic algorithms (AES-256, SHA-256+). Never hardcode keys.';
                         break;
@@ -172,11 +180,11 @@ Be extremely conservative. False alarms erode trust.
 
                 return {
                     type: 'code' as const,
-                    severity: args.severity,
+                    severity: finding.severity || 'medium',
                     title,
-                    description: args.explanation,
-                    file: args.file,
-                    line: args.line,
+                    description: finding.explanation || '',
+                    file: finding.file || '',
+                    line: finding.line || 0,
                     recommendation,
                     cwe,
                     confidence: 'high' as const, // AI findings start with high confidence

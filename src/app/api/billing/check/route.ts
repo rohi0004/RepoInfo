@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { checkAllowance } from '@/lib/billing-mongodb';
 
+export const maxDuration = 26;
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: Request) {
     try {
         const url = new URL(req.url);

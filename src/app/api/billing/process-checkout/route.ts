@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getStripe, grantExtraQueries, initVisitor, checkAllowance } from '@/lib/billing-mongodb';
 
+export const maxDuration = 26;
+export const dynamic = 'force-dynamic';
+
 // Process a completed checkout session and grant unlimited access
 export async function POST(req: Request) {
     try {

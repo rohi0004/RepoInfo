@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getStripe } from '@/lib/billing-mongodb';
 
+export const maxDuration = 26;
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     try {
         const body = await req.json();

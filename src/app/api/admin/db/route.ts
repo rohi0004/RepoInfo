@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getDatabase } from '@/lib/mongodb';
 
+export const maxDuration = 26;
+export const dynamic = 'force-dynamic';
+
 // Admin API for database manipulation
 export async function GET(req: Request) {
     try {

@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { getStripe, grantExtraQueries } from '@/lib/billing-mongodb';
 
+export const maxDuration = 26;
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: Request) {
     const stripe = getStripe();
     const sig = req.headers.get('stripe-signature') || '';

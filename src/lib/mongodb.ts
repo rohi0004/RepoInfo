@@ -35,9 +35,9 @@ export async function connectMongoDB() {
         attempt += 1;
         try {
             client = new MongoClient(uri, {
-                serverSelectionTimeoutMS: 5000, // 5s (reduced from 30s)
-                connectTimeoutMS: 10000, // 10s (reduced from 30s)
-                socketTimeoutMS: 45000,
+                serverSelectionTimeoutMS: 10000, // 10s for better reliability on cold starts
+                connectTimeoutMS: 15000, // 15s to handle deployment latency
+                socketTimeoutMS: 60000, // 60s for long-running queries
                 maxPoolSize: 10,
                 minPoolSize: 0,
                 retryWrites: true,

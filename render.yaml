@@ -1,34 +1,52 @@
 services:
   - type: web
     name: repoinfo
-    env: node
+    env: docker
     plan: free
-    buildCommand: npm install && npm run build
-    startCommand: npm start
+    dockerfilePath: ./Dockerfile.render
+    dockerContext: .
     envVars:
       - key: NODE_ENV
         value: production
-      - key: NEXT_PUBLIC_API_URL
+      - key: NEXT_PUBLIC_APP_URL
         value: https://repoinfo.onrender.com
+      - key: MONGODB_URI
+        fromDatabase:
+          name: repoinfo-mongodb
+          property: connectionString
+      - key: MONGODB_DB_NAME
+        value: repoinfo
       - key: GEMINI_API_KEY
         sync: false
       - key: GITHUB_TOKEN
         sync: false
-      - key: OPENAI_API_KEY
+      - key: OPENROUTER_API_KEY
         sync: false
-      - key: KV_URL
+      - key: STRIPE_SECRET_KEY
         sync: false
-      - key: KV_REST_API_URL
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE
         sync: false
-      - key: KV_REST_API_TOKEN
+      - key: STRIPE_WEBHOOK_SECRET
         sync: false
-      - key: KV_REST_API_READ_ONLY_TOKEN
+      - key: STRIPE_PRICE_PRO_MONTHLY
+        sync: false
+      - key: STRIPE_PRICE_PRO_YEARLY
         sync: false
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: redis
+          name: repoinfo-redis
+          property: connectionString
 
   - type: redis
     name: repoinfo-redis
     plan: free
     region: oregon
     ipAllowList: []
+
+databases:
+  - name: repoinfo-mongodb
+    databaseName: repoinfo
+    user: repoinfo
+    plan: free
+    region: oregon

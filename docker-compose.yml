@@ -15,8 +15,19 @@ services:
     command: sh -lc "npm install --no-audit --no-fund && npm run dev"
     environment:
       - NODE_ENV=development
+      - MONGODB_URI=mongodb://mongodb:27017/repoinfo
     depends_on:
+      - mongodb
       - redis
+
+  mongodb:
+    image: mongo:7-jammy
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=repoinfo
 
   redis:
     image: redis:7-alpine
@@ -26,4 +37,5 @@ services:
       - redis_data:/data
 
 volumes:
+  mongodb_data:
   redis_data:

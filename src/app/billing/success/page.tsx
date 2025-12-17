@@ -34,23 +34,29 @@ export default function BillingSuccessPage() {
                         const grantRes = await fetch(`/api/billing/process-checkout?session_id=${encodeURIComponent(session_id)}&visitorId=${encodeURIComponent(visitorId)}`, {
                             method: 'POST'
                         });
-                        const grantData = await grantRes.json();
-                        console.log('✅ Unlimited access granted:', grantData);
-                        if (!grantData.success) {
-                            console.warn('Grant may have failed:', grantData);
-                            setError('Payment processed but failed to activate unlimited access. Please contact support.');
-                            setLoading(false);
-                            return;
+                        
+                        if (!grantRes.ok) {
+                            console.error('Grant request failed:', grantRes.status, grantRes.statusText);
+                            const errorText = await grantRes.text();
+                            console.error('Error response:', errorText);
+                            // Continue anyway - webhook might have already processed it
+                        } else {
+                            const grantData = await grantRes.json();
+                            console.log('✅ Unlimited access response:', grantData);
+                            if (!grantData.success) {
+                                console.warn('Grant reported failure but continuing:', grantData);
+                                // Don't block - webhook might have already handled it
+                            }
                         }
-                        // Set a flag to skip billing check for a few minutes after payment
+                        
+                        // Set a flag to skip billing check after payment
                         localStorage.setItem('payment_just_completed', Date.now().toString());
-                        // Wait longer to ensure database replication across all nodes
-                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        // Small delay for database sync
+                        await new Promise(resolve => setTimeout(resolve, 1000));
                     } catch (e) {
-                        console.warn('Failed to auto-grant unlimited:', e);
-                        setError('Payment processed but failed to activate unlimited access. Please contact support.');
-                        setLoading(false);
-                        return;
+                        console.error('Grant error (continuing anyway):', e);
+                        // Don't block user - webhook should have processed payment
+                        localStorage.setItem('payment_just_completed', Date.now().toString());
                     }
                 }
                 

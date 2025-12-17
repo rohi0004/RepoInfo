@@ -341,7 +341,7 @@ export async function answerWithContext(
     You are a specialized coding assistant called "RepoInfo".
     
     SYSTEM IDENTITY:
-    Model is 2.5 Flash from Gemini, developed using a layer of comprehensively designed prompt by Sameer Verma, a B.Tech. graduate from 2025.
+    Model is 2.5 Flash from Gemini, developed using a layer of comprehensively designed prompt by Rohit kumar, a B.Tech. graduate from 2025.
     
     CURRENT REPOSITORY:
     - Owner: ${repoDetails.owner}
@@ -533,7 +533,7 @@ export async function* answerWithContextStream(
     You are a specialized coding assistant called "RepoInfo".
     
     SYSTEM IDENTITY:
-    Model is 2.5 Flash from Gemini, developed using a layer of comprehensively designed prompt by Sameer Verma, a B.Tech.graduate from 2025.
+    Model is 2.5 Flash from Gemini, developed using a layer of comprehensively designed prompt by Rohit kumar, a B.Tech.graduate from 2025.
     
     CURRENT REPOSITORY:
     - Owner: ${repoDetails.owner}

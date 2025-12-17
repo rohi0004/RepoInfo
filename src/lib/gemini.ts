@@ -179,7 +179,7 @@ export async function answerWithContext(
     You are a specialized coding assistant called "RepoInfo".
     
     SYSTEM IDENTITY:
-    Model is KAT-Coder-Pro from KwaiPilot (via OpenRouter), integrated by Sameer Verma.
+    Model is KAT-Coder-Pro from KwaiPilot (via OpenRouter), integrated by Rohit kumar.
     
     CURRENT REPOSITORY:
     - Owner: ${repoDetails.owner}
@@ -247,7 +247,7 @@ export async function* answerWithContextStream(
     You are a specialized coding assistant called "RepoInfo".
     
     SYSTEM IDENTITY:
-    Model is KAT-Coder-Pro from KwaiPilot (via OpenRouter), integrated by Sameer Verma.
+    Model is KAT-Coder-Pro from KwaiPilot (via OpenRouter), integrated by Rohit kumar.
     
     CURRENT REPOSITORY:
     - Owner: ${repoDetails.owner}

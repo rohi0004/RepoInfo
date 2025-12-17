@@ -18,6 +18,7 @@ export default function BillingSuccessPage() {
                     return;
                 }
 
+                // Fetch session details
                 const res = await fetch(`/api/billing/session?session_id=${encodeURIComponent(session_id)}`);
                 const data = await res.json();
                 if (data.error) {
@@ -25,42 +26,35 @@ export default function BillingSuccessPage() {
                     setLoading(false);
                     return;
                 }
-                // Automatically grant unlimited access BEFORE setting session (to prevent premature redirect)
+
                 const visitorId = data.session?.metadata?.visitorId;
-                const planId = data.session?.metadata?.planId;
-                if (visitorId && session_id) {
-                    console.log('🔄 Auto-granting unlimited access for visitor:', visitorId, 'plan:', planId);
+                console.log('✅ Payment successful for visitor:', visitorId);
+                
+                // Set flag to skip billing check after payment
+                localStorage.setItem('payment_just_completed', Date.now().toString());
+                
+                // Wait 2 seconds for webhook to process payment in background
+                console.log('⏳ Waiting for webhook to grant unlimited access...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Verify unlimited access was granted by webhook
+                if (visitorId) {
                     try {
-                        const grantRes = await fetch(`/api/billing/process-checkout?session_id=${encodeURIComponent(session_id)}&visitorId=${encodeURIComponent(visitorId)}`, {
-                            method: 'POST'
-                        });
+                        const checkRes = await fetch(`/api/billing/check?visitorId=${encodeURIComponent(visitorId)}`);
+                        const checkData = await checkRes.json();
+                        console.log('🔍 Billing check after webhook:', checkData);
                         
-                        if (!grantRes.ok) {
-                            console.error('Grant request failed:', grantRes.status, grantRes.statusText);
-                            const errorText = await grantRes.text();
-                            console.error('Error response:', errorText);
-                            // Continue anyway - webhook might have already processed it
+                        if (checkData.unlimited || checkData.remaining === -1) {
+                            console.log('✅ Unlimited access confirmed!');
                         } else {
-                            const grantData = await grantRes.json();
-                            console.log('✅ Unlimited access response:', grantData);
-                            if (!grantData.success) {
-                                console.warn('Grant reported failure but continuing:', grantData);
-                                // Don't block - webhook might have already handled it
-                            }
+                            console.warn('⚠️ Unlimited not yet set, but continuing (webhook may still be processing)');
                         }
-                        
-                        // Set a flag to skip billing check after payment
-                        localStorage.setItem('payment_just_completed', Date.now().toString());
-                        // Small delay for database sync
-                        await new Promise(resolve => setTimeout(resolve, 1000));
                     } catch (e) {
-                        console.error('Grant error (continuing anyway):', e);
-                        // Don't block user - webhook should have processed payment
-                        localStorage.setItem('payment_just_completed', Date.now().toString());
+                        console.warn('Check failed, continuing anyway:', e);
                     }
                 }
                 
-                // Now set session which will trigger redirect
+                // Set session which will trigger redirect
                 setSession(data.session);
             } catch (e: any) {
                 setError(e?.message || 'Failed to fetch session');
@@ -70,11 +64,17 @@ export default function BillingSuccessPage() {
         })();
     }, []);
 
-    // Auto-redirect immediately to stored return URL (repo chat)
+    // Auto-redirect to the chat where user left off
     useEffect(() => {
         if (!session) return;
+        
+        // Get the return URL from session metadata (stored during checkout)
         const returnUrl = session?.metadata?.returnUrl || '/chat?welcome=1';
-        // Redirect immediately
+        
+        console.log('🔄 Payment complete! Redirecting to:', returnUrl);
+        console.log('✅ You now have unlimited chat access!');
+        
+        // Redirect back to the chat where they left off
         window.location.href = returnUrl;
     }, [session]);
 

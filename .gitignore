@@ -90,3 +90,4 @@ analytics.json
 # any local overrides
 .local/
 local/
+netlify.toml

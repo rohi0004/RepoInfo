@@ -47,6 +47,12 @@ export async function POST(req: Request) {
         await grantExtraQueries(visitorId, grant, true); // true = unlimited
         console.log(`✅ Granted unlimited access to visitor ${visitorId}`);
 
+        // Update billing data with plan information
+        const { updateBillingData } = await import('@/lib/billing-mongodb');
+        const activeUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        await updateBillingData(visitorId, planId, grant, activeUntil, true);
+        console.log(`✅ Updated billing data for visitor ${visitorId}`);
+
         // Verify
         const billingCheck = await checkAllowance(visitorId);
         console.log(`🔍 Verification:`, JSON.stringify(billingCheck));

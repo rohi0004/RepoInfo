@@ -18,7 +18,6 @@ services:
       - MONGODB_URI=mongodb://mongodb:27017/repoinfo
     depends_on:
       - mongodb
-      - redis
 
   mongodb:
     image: mongo:7-jammy
@@ -29,13 +28,5 @@ services:
     environment:
       - MONGO_INITDB_DATABASE=repoinfo
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-
 volumes:
   mongodb_data:
-  redis_data:

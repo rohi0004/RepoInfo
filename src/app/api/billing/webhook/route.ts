@@ -47,7 +47,7 @@ export async function POST(req: Request) {
                     console.log(`🎯 Webhook processing payment for visitor ${visitorId}, plan ${planId}, unlimited=${setUnlimited}`);
                     
                     // Initialize visitor record first to ensure it exists
-                    const { initVisitor } = await import('@/lib/billing-mongodb');
+                    const { initVisitor, updateBillingData } = await import('@/lib/billing-mongodb');
                     await initVisitor(visitorId);
                     console.log(`✅ Visitor ${visitorId} initialized`);
                     
@@ -55,38 +55,15 @@ export async function POST(req: Request) {
                     await grantExtraQueries(visitorId, grant, setUnlimited);
                     console.log(`✅ Granted ${grant} queries to visitor ${visitorId} with unlimited=${setUnlimited}`);
                     
+                    // Update billing data with plan information
+                    const activeUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+                    await updateBillingData(visitorId, planId, grant, activeUntil, setUnlimited);
+                    console.log(`✅ Updated billing data for visitor ${visitorId}`);
+                    
                     // Verify it was set in MongoDB
                     const { checkAllowance } = await import('@/lib/billing-mongodb');
                     const verify = await checkAllowance(visitorId);
                     console.log(`🔍 MongoDB verification after webhook:`, JSON.stringify(verify));
-
-                    // Save plan record - use kv directly to store plan name and active timestamp
-                    try {
-                        if (process.env.KV_URL && process.env.KV_URL !== 'your_kv_rest_api_url' && process.env.KV_URL !== 'your_kv_url') {
-                            const { kv } = await import('@vercel/kv');
-                            const key = `billing:visitor:${visitorId}`;
-                            const activeUntil = '' + (Date.now() + 365 * 24 * 60 * 60 * 1000);
-                            const dataToSet: any = { plan: planId, extraQueries: (grant).toString(), activeUntil };
-                            if (setUnlimited) dataToSet.unlimited = '1';
-                            await kv.hset(key, dataToSet);
-                        }
-                        // Redis fallback
-                        if (process.env.REDIS_URL) {
-                            const { createClient } = await import('redis');
-                            const client = createClient({ url: process.env.REDIS_URL });
-                            await client.connect();
-                            try {
-                                const key = `billing:visitor:${visitorId}`;
-                                const activeUntil = '' + (Date.now() + 365 * 24 * 60 * 60 * 1000);
-                                const dataToSet: any = { plan: planId, extraQueries: (grant).toString(), activeUntil };
-                                if (setUnlimited) dataToSet.unlimited = '1';
-                                await client.hSet(key, dataToSet);
-                                console.log(`✅ Webhook: Set unlimited=${dataToSet.unlimited} for visitor ${visitorId}`);
-                            } finally { try { await client.disconnect(); } catch (e) {} }
-                        }
-                    } catch (e) {
-                        console.warn('Failed to save billing record in webhook:', e);
-                    }
 
                     // Send a billing email if SMTP is configured and we have an email
                     try {

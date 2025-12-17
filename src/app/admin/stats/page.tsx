@@ -267,8 +267,21 @@ export default function AdminStatsPage() {
                     <h1 className="text-3xl font-bold" style={{ background: 'linear-gradient(to right, var(--accent), #3b82f6)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                         Analytics Dashboard
                     </h1>
-                    <div className="text-sm" style={{ color: 'var(--muted)' }}>
-                        Last updated: {new Date().toLocaleTimeString()}
+                    <div className="flex items-center gap-4">
+                        <a
+                            href="/admin/database"
+                            className="px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:opacity-80"
+                            style={{
+                                background: 'var(--accent)',
+                                color: 'var(--accent-foreground)',
+                            }}
+                        >
+                            <Lock className="w-4 h-4" />
+                            Database Admin
+                        </a>
+                        <div className="text-sm" style={{ color: 'var(--muted)' }}>
+                            Last updated: {new Date().toLocaleTimeString()}
+                        </div>
                     </div>
                 </div>
 

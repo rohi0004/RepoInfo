@@ -51,7 +51,7 @@ export async function getVisitorUsage(visitorId: string) {
 
 export async function getBillingData(visitorId: string) {
   try {
-    if (!visitorId) return { plan: null, extraQueries: 0, unlimited: false, exists: false };
+    if (!visitorId) return { plan: null, extraQueries: 0, unlimited: false, blocked: false, exists: false };
 
     const db = await getDatabase();
     const collection = db.collection<BillingData>('billing');
@@ -64,16 +64,18 @@ export async function getBillingData(visitorId: string) {
         extraQueries: billing.extraQueries || 0,
         activeUntil: billing.activeUntil ? billing.activeUntil.getTime() : null,
         unlimited: billing.unlimited || false,
+        blocked: billing.blocked || false,
+        blockedReason: billing.blockedReason || undefined,
         exists: true
       };
       console.log(`📊 getBillingData(${visitorId}) [MongoDB]:`, JSON.stringify(result));
       return result;
     }
     
-    return { plan: null, extraQueries: 0, unlimited: false, exists: false };
+    return { plan: null, extraQueries: 0, unlimited: false, blocked: false, exists: false };
   } catch (e) {
     console.warn('getBillingData failed', e);
-    return { plan: null, extraQueries: 0, unlimited: false, exists: false };
+    return { plan: null, extraQueries: 0, unlimited: false, blocked: false, exists: false };
   }
 }
 
@@ -175,24 +177,38 @@ export async function updateBillingData(
     
     const now = new Date();
     
+    const updateDoc: any = {
+      $set: {
+        plan,
+        extraQueries,
+        activeUntil: activeUntil || null,
+        unlimited: unlimited || false,
+        blocked: false, // Ensure user is not blocked when updating billing
+        updatedAt: now,
+      },
+      $setOnInsert: {
+        createdAt: now,
+      }
+    };
+
+    // Remove blocked fields if unblocking
+    if (!unlimited) {
+      // Keep blocked fields as-is if not setting unlimited
+    } else {
+      // Remove blocked fields when granting unlimited
+      updateDoc.$unset = {
+        blockedReason: '',
+        blockedAt: ''
+      };
+    }
+    
     await collection.updateOne(
       { visitorId },
-      {
-        $set: {
-          plan,
-          extraQueries,
-          activeUntil: activeUntil || null,
-          unlimited: unlimited || false,
-          updatedAt: now,
-        },
-        $setOnInsert: {
-          createdAt: now,
-        }
-      },
+      updateDoc,
       { upsert: true }
     );
     
-    console.log(`✅ Updated billing for ${visitorId}: plan=${plan}, extraQueries=${extraQueries}`);
+    console.log(`✅ Updated billing for ${visitorId}: plan=${plan}, extraQueries=${extraQueries}, unlimited=${unlimited}`);
   } catch (e) {
     console.error('updateBillingData failed', e);
   }
@@ -344,20 +360,25 @@ export async function grantExtraQueries(visitorId: string, amount: number, setUn
     const existing = await billingCollection.findOne({ visitorId });
     
     if (existing) {
-      // Document exists - simple update
+      // Document exists - update it
       const updateDoc: any = {
-        $inc: {
-          extraQueries: amount
-        },
         $set: {
-          updatedAt: new Date()
+          extraQueries: (existing.extraQueries || 0) + amount,
+          updatedAt: new Date(),
+          blocked: false // Unblock user when granting queries
         }
       };
       
-      // Only set unlimited if explicitly requested
+      // Set unlimited if explicitly requested
       if (setUnlimited) {
         updateDoc.$set.unlimited = true;
       }
+      
+      // Remove blocked fields if unblocking
+      updateDoc.$unset = {
+        blockedReason: '',
+        blockedAt: ''
+      };
       
       await billingCollection.updateOne(
         { visitorId },

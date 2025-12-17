@@ -30,52 +30,22 @@ export async function POST(req: Request) {
             console.log(`✅ Granted ${grant} queries to visitor ${visitorId} with unlimited=true`);
         }
 
+        // Update billing data with plan information in MongoDB
+        const { updateBillingData, checkAllowance } = await import('@/lib/billing-mongodb');
+        const activeUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        await updateBillingData(visitorId, actualPlanId, grant, activeUntil, true);
+        console.log(`✅ Updated billing data for visitor ${visitorId}`);
+
         // Verify MongoDB was updated
-        const { getBillingData, checkAllowance } = await import('@/lib/billing-mongodb');
         const billingCheck = await checkAllowance(visitorId);
         console.log(`🔍 MongoDB billing check:`, JSON.stringify(billingCheck));
 
-        // Set unlimited in Redis (if configured)
-        if (process.env.REDIS_URL) {
-            const { createClient } = await import('redis');
-            const client = createClient({ url: process.env.REDIS_URL });
-            await client.connect();
-            try {
-                const key = `billing:visitor:${visitorId}`;
-                const activeUntil = '' + (Date.now() + 365 * 24 * 60 * 60 * 1000);
-                const dataToSet: any = { 
-                    plan: actualPlanId, 
-                    extraQueries: grant.toString(), 
-                    activeUntil,
-                    unlimited: '1'
-                };
-                await client.hSet(key, dataToSet);
-                console.log(`✅ Set unlimited=1 for visitor ${visitorId} in Redis`);
-                
-                // Verify it was set
-                const verify = await client.hGetAll(key);
-                console.log(`🔍 Redis verification:`, verify);
-                
-                return NextResponse.json({ 
-                    success: true, 
-                    visitorId,
-                    unlimited: true,
-                    data: verify,
-                    allowanceCheck: billingCheck
-                });
-            } finally {
-                try { await client.disconnect(); } catch (e) {}
-            }
-        } else {
-            // No Redis, using MongoDB only
-            console.log(`📊 Using MongoDB only (no Redis configured)`);
-            return NextResponse.json({ 
-                success: true, 
-                visitorId,
-                unlimited: true,
-                allowanceCheck: billingCheck
-            });
-        }
+        return NextResponse.json({ 
+            success: true, 
+            visitorId,
+            unlimited: true,
+            allowanceCheck: billingCheck
+        });
     } catch (e: any) {
         console.error('Grant unlimited error', e);
         return NextResponse.json({ error: e.message }, { status: 500 });

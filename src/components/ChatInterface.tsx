@@ -182,6 +182,26 @@ interface ChatInterfaceProps {
 }
 
 export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfaceProps) {
+    // Generate unique IDs for messages using a more robust approach
+    const messageIdCounter = useRef(0);
+    const generateMessageId = () => {
+        messageIdCounter.current += 1;
+        return `msg-${Date.now()}-${messageIdCounter.current}-${Math.random().toString(36).substr(2, 9)}`;
+    };
+
+    // Helper to add message while ensuring no duplicate IDs
+    const addMessage = (newMessage: Message) => {
+        setMessages((prev) => {
+            // Check if this ID already exists
+            const isDuplicate = prev.some(msg => msg.id === newMessage.id);
+            if (isDuplicate) {
+                console.warn('Duplicate message ID detected, regenerating:', newMessage.id);
+                return [...prev, { ...newMessage, id: generateMessageId() }];
+            }
+            return [...prev, newMessage];
+        });
+    };
+
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "welcome",
@@ -227,7 +247,24 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
     useEffect(() => {
         const saved = loadConversation(repoContext.owner, repoContext.repo);
         if (saved && saved.length > 1) {
-            setMessages(saved);
+            // Fix any duplicate IDs and regenerate old-style timestamp IDs
+            const seenIds = new Set<string>();
+            const messagesWithUniqueIds = saved.map((msg) => {
+                // Check if this is an old-style ID (pure timestamp or timestamp+1)
+                const isOldStyleId = /^\d+$/.test(msg.id);
+                
+                if (seenIds.has(msg.id) || isOldStyleId) {
+                    // Generate a new unique ID for duplicates or old-style IDs
+                    const newId = generateMessageId();
+                    seenIds.add(newId);
+                    console.log(`Regenerating ID: ${msg.id} -> ${newId}`);
+                    return { ...msg, id: newId };
+                }
+                seenIds.add(msg.id);
+                return msg;
+            });
+            
+            setMessages(messagesWithUniqueIds);
             setShowSuggestions(false);
             if (!toastShownRef.current) {
                 toast.info('Conversation restored', { duration: 2000 });
@@ -336,13 +373,13 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
         console.log('📁 Selected files:', targetFiles);
 
         const userMsg: Message = {
-            id: Date.now().toString(),
+            id: generateMessageId(),
             role: "user",
             content: input,
             relevantFiles: targetFiles.length > 0 ? targetFiles : undefined
         };
 
-        setMessages((prev) => [...prev, userMsg]);
+        addMessage(userMsg);
         setInput("");
         setSelectedFiles([]); // Clear selected files after submission
         setLoading(true);
@@ -377,11 +414,11 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                 if (successfulFiles.length === 0) {
                     const errorDetails = failedFiles.map(f => `- ${f.path}: ${f.error || 'Unknown error'}`).join('\n');
                     const botMsg: Message = {
-                        id: (Date.now() + 1).toString(),
+                        id: generateMessageId(),
                         role: "model",
                         content: `I couldn't find the specified file(s):\n\n${errorDetails}\n\nPlease make sure the file path is correct. You can type \`/\` to see available files.`,
                     };
-                    setMessages((prev) => [...prev, botMsg]);
+                    addMessage(botMsg);
                     setLoading(false);
                     return;
                 }
@@ -403,13 +440,13 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                 console.log('📝 Query:', enhancedQuery.substring(0, 200) + '...');
                 
                 const botMsg: Message = {
-                    id: (Date.now() + 1).toString(),
+                    id: generateMessageId(),
                     role: "model",
                     content: "Analyzing files...",
                     relevantFiles: successfulFiles.map(f => f.path)
                 };
 
-                setMessages((prev) => [...prev, botMsg]);
+                addMessage(botMsg);
 
                 const answer = await generateAnswer(
                     enhancedQuery,
@@ -433,11 +470,11 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
             } catch (error) {
                 console.error("File query error:", error);
                 const errorMsg: Message = {
-                    id: (Date.now() + 1).toString(),
+                    id: generateMessageId(),
                     role: "model",
                     content: "I encountered an error while processing the file. Please try again.",
                 };
-                setMessages((prev) => [...prev, errorMsg]);
+                addMessage(errorMsg);
                 setLoading(false);
                 return;
             }
@@ -512,12 +549,12 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
 
                 const modelMsg: Message = {
-                    id: (Date.now() + 1).toString(),
+                    id: generateMessageId(),
                     role: "model",
                     content: content,
                     vulnerabilities: findings as any
                 };
-                setMessages((prev) => [...prev, modelMsg]);
+                addMessage(modelMsg);
                 setStreamingStatus(null); // Clear streaming status
                 setLoading(false);
                 setScanning(false);
@@ -533,11 +570,11 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
                 // Show error message to user
                 const errorMsg: Message = {
-                    id: (Date.now() + 1).toString(),
+                    id: generateMessageId(),
                     role: "model",
                     content: "I encountered an error while scanning for security vulnerabilities. Please try again.",
                 };
-                setMessages((prev) => [...prev, errorMsg]);
+                addMessage(errorMsg);
                 return; // Don't fall through to normal chat
             }
         }
@@ -564,12 +601,12 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
             
             // Create bot message immediately so user sees it's responding
             const modelMsg: Message = {
-                id: (Date.now() + 1).toString(),
+                id: generateMessageId(),
                 role: "model",
                 content: "Thinking...",
                 relevantFiles,
             };
-            setMessages((prev) => [...prev, modelMsg]);
+            addMessage(modelMsg);
 
             // Get visitor ID
             let visitorId = localStorage.getItem("visitor_id");
@@ -612,11 +649,11 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
             // Show user-friendly error message
             const errorMsg: Message = {
-                id: (Date.now() + 1).toString(),
+                id: generateMessageId(),
                 role: "model",
                 content: "I encountered an error while analyzing the code. Please try again or rephrase your question.",
             };
-            setMessages((prev) => [...prev, errorMsg]);
+            addMessage(errorMsg);
             setStreamingStatus(null);
         } finally {
             setLoading(false);

@@ -57,6 +57,25 @@ export async function POST(req: Request) {
         const billingCheck = await checkAllowance(visitorId);
         console.log(`🔍 Verification:`, JSON.stringify(billingCheck));
 
+        // Record payment in database
+        try {
+            const { getDatabase } = await import('@/lib/mongodb');
+            const db = await getDatabase();
+            await db.collection('payments').insertOne({
+                visitorId,
+                amount: session.amount_total ? session.amount_total / 100 : 0,
+                currency: session.currency?.toUpperCase() || 'USD',
+                plan: planId,
+                stripeSessionId: sessionId,
+                email: session.customer_details?.email || session.customer_email || '',
+                status: 'completed',
+                createdAt: new Date()
+            });
+            console.log(`✅ Payment recorded for visitor ${visitorId}`);
+        } catch (e) {
+            console.warn('Failed to record payment:', e);
+        }
+
         return NextResponse.json({
             success: true,
             visitorId,

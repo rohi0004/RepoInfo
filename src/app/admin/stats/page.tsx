@@ -27,7 +27,7 @@ function AdminLoginPage({ isError }: { isError: boolean }) {
         e.preventDefault();
         if (password === '916286') {
             window.location.hash = '#' + btoa(password);
-            window.location.reload();
+            window.location.href = '/admin/database';
         } else {
             alert('Invalid key');
         }

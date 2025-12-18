@@ -16,14 +16,14 @@ export default function ThemeToggle() {
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
     return (
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-4 left-4 z-50">
         <div className="w-12 h-12 rounded-full flex items-center justify-center shadow-md backdrop-blur border" style={{ background: 'var(--surface)', borderColor: 'var(--border)' }} />
       </div>
     );
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    <div className="fixed bottom-4 left-4 z-50">
       <button
         aria-label="Toggle theme"
         className="w-12 h-12 rounded-full flex items-center justify-center shadow-md backdrop-blur border"

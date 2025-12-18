@@ -640,26 +640,26 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
     return (
         <div className="flex flex-col h-full" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
             {/* Header */}
-            <div className="p-4" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
-                <div className="flex items-center gap-4 max-w-3xl mx-auto">
+            <div className="p-2 sm:p-4" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface)' }}>
+                <div className="flex items-center gap-2 sm:gap-4 max-w-3xl mx-auto">
                     {onToggleSidebar && (
                         <button
                             onClick={onToggleSidebar}
-                            className="md:hidden p-2 -ml-2 hover:bg-white/10 rounded-lg transition-colors"
+                            className="md:hidden p-1.5 sm:p-2 -ml-2 hover:bg-white/10 rounded-lg transition-colors"
                         >
-                            <Menu className="w-5 h-5 text-zinc-400" />
+                            <Menu className="w-4 h-4 sm:w-5 sm:h-5 text-zinc-400" />
                         </button>
                     )}
                     <Link
                         href="/"
-                        className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                        className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg transition-colors"
                         title="Back to home"
                     >
-                        <ArrowLeft className="w-5 h-5" style={{ color: 'var(--muted)' }} />
+                        <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: 'var(--muted)' }} />
                     </Link>
-                    <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <Github className="w-5 h-5 shrink-0" style={{ color: 'var(--muted)' }} />
-                        <h1 className="text-lg font-semibold truncate" style={{ color: 'var(--foreground)' }}>{repoContext.owner}/{repoContext.repo}</h1>
+                    <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                        <Github className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" style={{ color: 'var(--muted)' }} />
+                        <h1 className="text-sm sm:text-base lg:text-lg font-semibold truncate" style={{ color: 'var(--foreground)' }}>{repoContext.owner}/{repoContext.repo}</h1>
                     </div>
 
                     <div className={cn(
@@ -698,7 +698,7 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                             )}
                         >
                             <div className={cn(
-                                "w-10 h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
+                                "w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center shrink-0 overflow-hidden"
                             )}>
                                 {msg.role === "model" ? (
                                     <BotIcon className="w-full h-full text-white" />
@@ -711,10 +711,10 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
                             <div className={cn(
                                 "flex flex-col gap-2",
-                                msg.role === "user" ? "items-end max-w-[85%] md:max-w-[80%]" : "items-start max-w-full md:max-w-full w-full min-w-0"
+                                msg.role === "user" ? "items-end max-w-[85%] sm:max-w-[80%]" : "items-start max-w-full md:max-w-full w-full min-w-0"
                             )}>
                             <div className={cn(
-                                "p-4 rounded-2xl overflow-hidden w-full min-w-0",
+                                "p-2.5 sm:p-3 md:p-4 rounded-xl sm:rounded-2xl overflow-hidden w-full min-w-0",
                                 msg.role === "user"
                                     ? "text-white rounded-tr-none"
                                     : "rounded-tl-none"
@@ -799,7 +799,7 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                                 <button
                                     key={index}
                                     onClick={() => handleSuggestionClick(suggestion)}
-                                    className="text-sm px-4 py-2 rounded-full transition-all hover:opacity-80"
+                                    className="text-xs sm:text-sm px-3 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all hover:opacity-80"
                                     style={{ background: 'var(--surface)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
                                 >
                                     {suggestion}
@@ -809,7 +809,7 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                     </motion.div>
                 )}
 
-                <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative">
+                <form onSubmit={handleSubmit} className="max-w-3xl mx-auto relative px-2 sm:px-0">
                     <ChatInput
                         value={input}
                         onChange={setInput}

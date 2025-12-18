@@ -247,52 +247,48 @@ export default function AdminDatabasePage() {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-[#0a0d1a] dark:via-[#0b1020] dark:to-[#0a0d1a] py-8 px-4">
+        <div className="min-h-screen bg-gradient-to-br from-zinc-50 via-white to-zinc-100 dark:from-[#0a0d1a] dark:via-[#0b1020] dark:to-[#0a0d1a] py-4 sm:py-8 px-3 sm:px-4">
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
+                    <div className="mb-4">
                         <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                             Admin Database Management
                         </h1>
-                        <a
-                            href="/admin/stats"
-                            className="px-4 py-2 rounded-lg font-medium transition-all duration-200 flex items-center gap-2 hover:opacity-80 bg-blue-600 text-white"
-                        >
-                            ← Back to Analytics
-                        </a>
                     </div>
                     <p className="text-zinc-600 dark:text-zinc-400">
                         Manage visitor access, billing, payments and database records
                     </p>
                 </div>
 
-                <div className="bg-white dark:bg-[#071024] rounded-2xl p-6 shadow-lg border border-zinc-200 dark:border-zinc-800 mb-6">
-                    <div className="flex items-center gap-2 mb-4">
-                        <Plus className="w-5 h-5 text-green-600 dark:text-green-400" />
-                        <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Quick Grant Unlimited Access</h2>
+                <div className="bg-white dark:bg-[#071024] rounded-xl sm:rounded-2xl p-4 sm:p-6 shadow-lg border border-zinc-200 dark:border-zinc-800 mb-4 sm:mb-6">
+                    <div className="flex items-center gap-2 mb-3 sm:mb-4">
+                        <Plus className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" />
+                        <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100">Quick Grant Unlimited Access</h2>
                     </div>
                     
-                    <div className="flex gap-4">
+                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                         <input
                             type="text"
                             value={visitorId}
                             onChange={(e) => setVisitorId(e.target.value)}
                             placeholder="Enter visitor ID..."
-                            className="flex-1 px-4 py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-[#0b1020] text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="flex-1 px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-[#0b1020] text-sm sm:text-base text-zinc-900 dark:text-zinc-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         />
-                        <button
-                            onClick={grantUnlimited}
-                            disabled={loading || !visitorId.trim()}
-                            className="px-6 py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all whitespace-nowrap"
-                        >
-                            {loading ? 'Granting...' : 'Grant Access'}
-                        </button>
-                        <button
-                            onClick={() => setShowPaymentModal(true)}
-                            className="px-6 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium hover:opacity-90 transition-all whitespace-nowrap"
-                        >
-                            Record Payment
-                        </button>
+                        <div className="flex gap-2 sm:gap-4">
+                            <button
+                                onClick={grantUnlimited}
+                                disabled={loading || !visitorId.trim()}
+                                className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-green-600 to-emerald-600 text-white text-sm sm:text-base font-medium hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all whitespace-nowrap"
+                            >
+                                {loading ? 'Granting...' : 'Grant Access'}
+                            </button>
+                            <button
+                                onClick={() => setShowPaymentModal(true)}
+                                className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm sm:text-base font-medium hover:opacity-90 transition-all whitespace-nowrap"
+                            >
+                                Record Payment
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -316,27 +312,27 @@ export default function AdminDatabasePage() {
                     </div>
                 )}
 
-                <div className="flex gap-2 mb-6">
+                <div className="flex gap-2 mb-4 sm:mb-6 overflow-x-auto pb-2">
                     <button
                         onClick={() => setActiveTab('visitors')}
-                        className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                        className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm sm:text-base ${
                             activeTab === 'visitors'
                                 ? 'bg-blue-600 text-white shadow-lg'
                                 : 'bg-white dark:bg-[#071024] text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800'
                         }`}
                     >
-                        <Database className="w-4 h-4 inline mr-2" />
+                        <Database className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
                         Visitors ({allVisitors.length})
                     </button>
                     <button
                         onClick={() => setActiveTab('payments')}
-                        className={`px-6 py-3 rounded-lg font-medium transition-all ${
+                        className={`px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-all whitespace-nowrap text-sm sm:text-base ${
                             activeTab === 'payments'
                                 ? 'bg-blue-600 text-white shadow-lg'
                                 : 'bg-white dark:bg-[#071024] text-zinc-600 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-800'
                         }`}
                     >
-                        <DollarSign className="w-4 h-4 inline mr-2" />
+                        <DollarSign className="w-3 h-3 sm:w-4 sm:h-4 inline mr-1 sm:mr-2" />
                         Payments ({payments.length})
                     </button>
                 </div>
@@ -458,7 +454,7 @@ export default function AdminDatabasePage() {
                 {activeTab === 'payments' && (
                     <div className="bg-white dark:bg-[#071024] rounded-2xl shadow-lg border border-zinc-200 dark:border-zinc-800">
                         <div className="p-6 border-b border-zinc-200 dark:border-zinc-800">
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between mb-6">
                                 <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Payment Records</h2>
                                 <button
                                     onClick={loadPayments}
@@ -468,6 +464,26 @@ export default function AdminDatabasePage() {
                                     <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                                     Refresh
                                 </button>
+                            </div>
+                            
+                            {/* Payment Summary Stats */}
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                                <div className="p-3 sm:p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900/50">
+                                    <div className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-1">Total Payments</div>
+                                    <div className="text-xl sm:text-2xl font-bold text-zinc-900 dark:text-zinc-100">{payments.length}</div>
+                                </div>
+                                <div className="p-3 sm:p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900/50">
+                                    <div className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-1">Total Revenue</div>
+                                    <div className="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">
+                                        ${payments.reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2)}
+                                    </div>
+                                </div>
+                                <div className="p-3 sm:p-4 rounded-lg bg-zinc-50 dark:bg-zinc-900/50">
+                                    <div className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-1">Monthly Plans</div>
+                                    <div className="text-xl sm:text-2xl font-bold text-blue-600 dark:text-blue-400">
+                                        {payments.filter(p => p.plan === 'pro_monthly').length}
+                                    </div>
+                                </div>
                             </div>
                         </div>
 

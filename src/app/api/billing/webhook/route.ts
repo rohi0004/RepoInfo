@@ -65,6 +65,25 @@ export async function POST(req: Request) {
                     const verify = await checkAllowance(visitorId);
                     console.log(`🔍 MongoDB verification after webhook:`, JSON.stringify(verify));
 
+                    // Record payment in database
+                    try {
+                        const { getDatabase } = await import('@/lib/mongodb');
+                        const db = await getDatabase();
+                        await db.collection('payments').insertOne({
+                            visitorId,
+                            amount: session.amount_total ? session.amount_total / 100 : 0,
+                            currency: session.currency?.toUpperCase() || 'USD',
+                            plan: planId,
+                            stripeSessionId: session.id,
+                            email: customerEmail,
+                            status: 'completed',
+                            createdAt: new Date()
+                        });
+                        console.log(`✅ Payment recorded for visitor ${visitorId}`);
+                    } catch (e) {
+                        console.warn('Failed to record payment:', e);
+                    }
+
                     // Send a billing email if SMTP is configured and we have an email
                     try {
                         if (customerEmail) {

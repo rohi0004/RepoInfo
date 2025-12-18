@@ -28,7 +28,7 @@ export default function Home() {
       let parsedInput = input.trim();
       
       // Check if input is a GitHub URL
-      const githubUrlPattern = /(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/]+)\/([^\/\s?#]+)/i;
+      const githubUrlPattern = /(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/]+)\/([^\/\s?#]+?)(?:\.git)?(?:\/|$|\s|\?|#)/i;
       const urlMatch = parsedInput.match(githubUrlPattern);
       
       if (urlMatch) {
@@ -64,7 +64,7 @@ export default function Home() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.5 }}
         onClick={() => setIsInfoOpen(true)}
-        className="fixed top-6 right-6 z-40 p-3 rounded-full transition-all duration-300 hover:scale-110 active:scale-95"
+        className="fixed top-4 right-4 sm:top-6 sm:right-6 z-40 p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110 active:scale-95"
         style={{
           background: 'var(--surface)',
           border: '2px solid var(--border)',
@@ -72,11 +72,11 @@ export default function Home() {
         }}
         title="Project Information"
       >
-        <Info className="w-5 h-5" />
+        <Info className="w-4 h-4 sm:w-5 sm:h-5" />
       </motion.button>
 
       {/* Hero Section */}
-      <section className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden z-10">
+      <section className="min-h-screen flex flex-col items-center justify-center px-4 py-8 sm:p-4 relative overflow-hidden z-10">
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -125,40 +125,40 @@ export default function Home() {
             </div>
           </div>
 
-          <h1 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to bottom, var(--foreground), var(--foreground))' }}>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold tracking-tight mb-4 sm:mb-6 bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to bottom, var(--foreground), var(--foreground))' }}>
             RepoInfo
           </h1>
 
           {/* CAG Badge (Below Title) */}
           {/* <CAGBadge /> */}
 
-          <p className="text-base sm:text-lg md:text-xl mb-3 max-w-lg mx-auto font-medium" style={{ color: 'var(--foreground)' }}>
+          <p className="text-sm sm:text-base md:text-lg lg:text-xl mb-2 sm:mb-3 max-w-lg mx-auto font-medium px-2" style={{ color: 'var(--foreground)' }}>
             <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(to right, var(--accent), #3b82f6)' }}>Unlock any codebase</span> with AI-powered insights.
           </p>
-          <p className="text-sm md:text-base mb-12 max-w-lg mx-auto" style={{ color: 'var(--muted)' }}>
+          <p className="text-xs sm:text-sm md:text-base mb-8 sm:mb-12 max-w-lg mx-auto px-2" style={{ color: 'var(--muted)' }}>
             Chat with repositories, analyze code quality, and understand complex projects instantly.
           </p>
 
-          <form onSubmit={handleSubmit} className="w-full max-w-xl relative group">
-            <div className="flex items-center gap-2 p-2 rounded-xl shadow-lg transition-all duration-300 group-hover:shadow-2xl" style={{ background: 'var(--surface)', border: '2px solid var(--border)' }}>
-              <div className="flex-1 flex items-center gap-2 px-2">
-                <Search className="w-5 h-5 shrink-0" style={{ color: 'var(--muted)' }} />
+          <form onSubmit={handleSubmit} className="w-full max-w-xl relative group px-2">
+            <div className="flex items-center gap-1 sm:gap-2 p-1.5 sm:p-2 rounded-xl shadow-lg transition-all duration-300 group-hover:shadow-2xl" style={{ background: 'var(--surface)', border: '2px solid var(--border)' }}>
+              <div className="flex-1 flex items-center gap-2 px-1 sm:px-2">
+                <Search className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" style={{ color: 'var(--muted)' }} />
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="username/repo or GitHub URL"
-                  className="flex-1 border-none outline-none py-3 text-sm md:text-base w-full min-w-0"
+                  className="flex-1 border-none outline-none py-2 sm:py-3 text-xs sm:text-sm md:text-base w-full min-w-0"
                   style={{ background: 'transparent', color: 'var(--foreground)' }}
                 />
               </div>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-5 py-3 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50 shrink-0 hover:scale-105"
+                className="px-3 sm:px-5 py-2 sm:py-3 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50 shrink-0 hover:scale-105"
                 style={{ background: 'var(--accent)', color: '#fff', boxShadow: '0 4px 14px 0 rgba(112, 221, 181, 0.4)' }}
               >
-                {loading ? <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" /> : <ArrowRight className="w-4 h-4 md:w-5 md:h-5" />}
+                {loading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
             </div>
           </form>

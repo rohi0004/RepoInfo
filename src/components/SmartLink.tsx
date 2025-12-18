@@ -25,7 +25,7 @@ export function SmartLink({ href, children, ...props }: SmartLinkProps) {
         }
 
         // Check if it's a GitHub URL
-        const githubUrlRegex = /^https:\/\/github\.com\/([a-zA-Z0-9-]+)(\/([a-zA-Z0-9-_\.]+))?$/;
+        const githubUrlRegex = /^https:\/\/github\.com\/([a-zA-Z0-9-]+)(\/([a-zA-Z0-9-_\.]+?)(?:\.git)?)?$/;
         const match = href.match(githubUrlRegex);
 
         if (match) {

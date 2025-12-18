@@ -59,21 +59,21 @@ export default function PricingPage() {
     
 
     return (
-        <div className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 bg-white dark:bg-[#0b1020] transition-colors">
+        <div className="min-h-screen py-6 sm:py-12 px-3 sm:px-4 lg:px-8 bg-white dark:bg-[#0b1020] transition-colors">
             <div className="max-w-4xl mx-auto text-center">
-                <div className="inline-flex items-center gap-2 mb-4">
-                    <Sparkles className="w-5 h-5 text-yellow-500" />
-                    <h1 className="text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">Pricing</h1>
+                <div className="inline-flex items-center gap-2 mb-3 sm:mb-4">
+                    <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">Pricing</h1>
                 </div>
-                <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">You get up to 5 free queries for testing. Choose a plan to unlock more capacity and priority processing.</p>
+                <p className="mt-2 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 px-2">You get up to 5 free queries for testing. Choose a plan to unlock more capacity and priority processing.</p>
             </div>
 
-            <div className="max-w-5xl mx-auto mt-10 grid gap-6 md:grid-cols-2">
+            <div className="max-w-5xl mx-auto mt-6 sm:mt-10 grid gap-4 sm:gap-6 md:grid-cols-2">
                 {/* Basic card for each plan */}
                 {plans.map((p, idx) => (
-                    <div key={p.id} className={`relative rounded-2xl p-6 sm:p-8 border transition-shadow hover:shadow-2xl ${idx === 0 ? 'border-gray-200 bg-white dark:border-zinc-800 dark:bg-[#071024]' : 'border-transparent bg-gradient-to-b from-white/60 to-white/30 dark:from-zinc-900/60 dark:to-zinc-900/40'}`}>
+                    <div key={p.id} className={`relative rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 border transition-shadow hover:shadow-2xl ${idx === 0 ? 'border-gray-200 bg-white dark:border-zinc-800 dark:bg-[#071024]' : 'border-transparent bg-gradient-to-b from-white/60 to-white/30 dark:from-zinc-900/60 dark:to-zinc-900/40'}`}>
                         {idx === 1 && (
-                            <div className="absolute -top-3 right-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-3 py-1 rounded-full text-xs font-semibold shadow">Most popular</div>
+                            <div className="absolute -top-2 sm:-top-3 right-2 sm:right-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold shadow">Most popular</div>
                         )}
 
                         <div className="flex items-center justify-between">

@@ -118,23 +118,23 @@ export default function FeatureTiles() {
     ];
 
     return (
-        <section className="w-full max-w-7xl mx-auto px-4 py-16">
+        <section className="w-full max-w-7xl mx-auto px-3 sm:px-4 py-8 sm:py-12 md:py-16">
             {/* Section Header */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-center mb-16"
+                className="text-center mb-8 sm:mb-12 md:mb-16"
             >
-                <h2 className="text-4xl md:text-5xl font-bold mb-4" style={{ color: 'var(--foreground)' }}>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-2 sm:mb-3 md:mb-4 px-2" style={{ color: 'var(--foreground)' }}>
                     Supercharge Your Development
                 </h2>
-                <p className="text-lg max-w-2xl mx-auto" style={{ color: 'var(--muted)' }}>
+                <p className="text-sm sm:text-base md:text-lg max-w-2xl mx-auto px-2" style={{ color: 'var(--muted)' }}>
                     Powerful AI-driven features to analyze, understand, and improve any codebase
                 </p>
             </motion.div>
 
             {/* Feature Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                 {features.map((feature, index) => (
                     <Feature key={index} {...feature} />
                 ))}

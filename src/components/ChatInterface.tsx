@@ -12,9 +12,11 @@ import { EnhancedMarkdown } from "./EnhancedMarkdown";
 import { countMessageTokens, formatTokenCount, getTokenWarningLevel, isRateLimitError, getRateLimitErrorMessage, MAX_TOKENS } from "@/lib/tokens";
 import { validateMermaidSyntax, sanitizeMermaidCode, getFallbackTemplate, generateMermaidFromJSON } from "@/lib/diagram-utils";
 import { saveConversation, loadConversation, clearConversation } from "@/lib/storage";
+import { getSelectedModel } from "@/lib/models";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { CodeBlock } from "./CodeBlock";
 import { ChatInput } from "./ChatInput";
+import { ModelSelector } from "./ModelSelector";
 import Link from "next/link";
 import { StreamingProgress } from "./StreamingProgress";
 import type { StreamUpdate } from "@/lib/streaming-types";
@@ -194,11 +196,18 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [initialized, setInitialized] = useState(false);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
+    const [selectedModel, setSelectedModel] = useState<string>('');
+    const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
 
     // Streaming state
     const [streamingStatus, setStreamingStatus] = useState<{ message: string; progress: number } | null>(null);
     const [currentStreamingMessage, setCurrentStreamingMessage] = useState("");
     const [ownerProfile, setOwnerProfile] = useState<any>(null);
+
+    // Initialize selected model from localStorage
+    useEffect(() => {
+        setSelectedModel(getSelectedModel());
+    }, []);
 
     // Fetch owner profile on mount
     useEffect(() => {
@@ -320,22 +329,22 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
         setShowSuggestions(false);
 
-        // Extract file paths from input (format: /path/to/file)
-        // Match paths starting with / and containing file extensions
-        const filePathMatches = input.match(/\/[^\s]+\.(tsx?|jsx?|py|java|go|rs|rb|php|cpp|c|h|cs|swift|kt|md|json|ya?ml|toml|sh|bash|css|html|xml|sql|r|scala|m|mm|vue|svelte)/gi);
-        const targetFiles = filePathMatches ? filePathMatches.map(f => f.slice(1)) : [];
+        // Use selected files from tags
+        const targetFiles = selectedFiles.length > 0 ? selectedFiles : [];
 
         console.log('🔍 Input:', input);
-        console.log('📁 Detected file paths:', targetFiles);
+        console.log('📁 Selected files:', targetFiles);
 
         const userMsg: Message = {
             id: Date.now().toString(),
             role: "user",
             content: input,
+            relevantFiles: targetFiles.length > 0 ? targetFiles : undefined
         };
 
         setMessages((prev) => [...prev, userMsg]);
         setInput("");
+        setSelectedFiles([]); // Clear selected files after submission
         setLoading(true);
 
         // Handle file-specific queries
@@ -379,56 +388,45 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
 
                 // Create a focused context with the file content
                 const fileContext = successfulFiles.map(f => 
-                    `File: ${f.path}\n\`\`\`\n${f.content.slice(0, 5000)}\n\`\`\``
+                    `File: ${f.path}\n\`\`\`\n${f.content.slice(0, 8000)}\n\`\`\``
                 ).join('\n\n');
 
                 // Check if user asked a question or just provided file path
-                const cleanInput = input.replace(/\/[\w\-\.\/]+\.(tsx?|jsx?|py|java|go|rs|rb|php|cpp|c|h|cs|swift|kt|md|json|ya?ml|toml|sh|bash)/gi, '').trim();
-                const hasQuestion = cleanInput.length > 0;
+                const hasQuestion = input.trim().length > 0;
                 
                 const enhancedQuery = hasQuestion 
-                    ? `${cleanInput}\n\nContext - Here are the file(s) you asked about:\n${fileContext}`
-                    : `Please analyze and explain the following file(s). Describe what each file does, its main functionality, key components, and any important patterns or logic:\n\n${fileContext}`;
+                    ? `IMPORTANT: Answer ONLY based on these specific files. Do not provide general knowledge or information from other files.\n\nUser Question: ${input}\n\nFILES TO ANALYZE:\n${fileContext}\n\nProvide a focused answer based ONLY on the content of these files. If the answer cannot be found in these files, say so clearly. You may suggest checking other related files if relevant.`
+                    : `IMPORTANT: Analyze ONLY these specific files. Do not include general information.\n\nFILES TO ANALYZE:\n${fileContext}\n\nProvide a concise summary of:\n1. What each file does\n2. Main functionality and purpose\n3. Key components/functions\n4. Important patterns or logic\n\nYou may suggest related files that might be useful to explore.`;
 
                 // Use the streaming answer function
                 console.log('🤖 Generating AI response...');
                 console.log('📝 Query:', enhancedQuery.substring(0, 200) + '...');
                 
-                let fullResponse = "";
                 const botMsg: Message = {
                     id: (Date.now() + 1).toString(),
                     role: "model",
-                    content: "",
+                    content: "Analyzing files...",
                     relevantFiles: successfulFiles.map(f => f.path)
                 };
 
                 setMessages((prev) => [...prev, botMsg]);
-                setCurrentStreamingMessage("");
 
-                const stream = generateAnswerStream(
+                const answer = await generateAnswer(
                     enhancedQuery,
                     "", // context - empty for now
                     { owner: repoContext.owner, repo: repoContext.repo },
-                    messages,
+                    messages.map(m => ({ role: m.role, content: m.content })),
                     undefined, // profileData
-                    undefined // visitorId
+                    undefined, // visitorId
+                    selectedModel // selected AI model
                 );
 
-                for await (const chunk of stream) {
-                    fullResponse += chunk;
-                    // Update both streaming message AND the actual message in real-time
-                    setCurrentStreamingMessage(fullResponse);
-                    setMessages((prev) =>
-                        prev.map((msg) =>
-                            msg.id === botMsg.id ? { ...msg, content: fullResponse } : msg
-                        )
-                    );
-                    console.log('📨 Received chunk, total length:', fullResponse.length);
-                }
+                setMessages((prev) =>
+                    prev.map((msg) =>
+                        msg.id === botMsg.id ? { ...msg, content: answer } : msg
+                    )
+                );
 
-                console.log('✅ AI response complete, length:', fullResponse.length);
-
-                setCurrentStreamingMessage("");
                 setLoading(false);
                 console.log('✓ File-specific query complete');
                 return;
@@ -586,7 +584,8 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                 { owner: repoContext.owner, repo: repoContext.repo },
                 messages.map(m => ({ role: m.role, content: m.content })),
                 ownerProfile, // Pass profile data for developer cards
-                visitorId
+                visitorId,
+                selectedModel // selected AI model
             );
 
             // Update the message with the actual response
@@ -818,10 +817,17 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                         disabled={totalTokens >= MAX_TOKENS}
                         loading={loading}
                         fileTree={repoContext.fileTree}
+                        selectedFiles={selectedFiles}
                         onFileSelect={(filePath) => {
-                            // Optional: You can add logic here when a file is selected
-                            console.log('File selected:', filePath);
+                            // Add file to selected files if not already added
+                            if (!selectedFiles.includes(filePath)) {
+                                setSelectedFiles([...selectedFiles, filePath]);
+                            }
                         }}
+                        onRemoveFile={(filePath) => {
+                            setSelectedFiles(selectedFiles.filter(f => f !== filePath));
+                        }}
+                        onModelChange={(modelId) => setSelectedModel(modelId)}
                     />
                 </form>
             </div>

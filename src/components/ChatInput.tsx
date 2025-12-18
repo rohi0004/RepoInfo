@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from "react";
-import { Send, FileCode } from "lucide-react";
+import { Send, FileCode, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ModelSelector } from "./ModelSelector";
 
 interface ChatInputProps {
     value: string;
@@ -11,9 +12,12 @@ interface ChatInputProps {
     loading?: boolean;
     fileTree?: any[];
     onFileSelect?: (filePath: string) => void;
+    selectedFiles?: string[];
+    onRemoveFile?: (filePath: string) => void;
+    onModelChange?: (modelId: string) => void;
 }
 
-export function ChatInput({ value, onChange, onSubmit, placeholder, disabled, loading, fileTree = [], onFileSelect }: ChatInputProps) {
+export function ChatInput({ value, onChange, onSubmit, placeholder, disabled, loading, fileTree = [], onFileSelect, selectedFiles = [], onRemoveFile, onModelChange }: ChatInputProps) {
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const [isMobile, setIsMobile] = useState(false);
     const [showFileSuggestions, setShowFileSuggestions] = useState(false);
@@ -108,8 +112,9 @@ export function ChatInput({ value, onChange, onSubmit, placeholder, disabled, lo
     };
 
     const handleFileSelect = (filePath: string) => {
+        // Remove the /filename from input after selecting
         const lastSlashIndex = value.lastIndexOf('/');
-        const newValue = value.slice(0, lastSlashIndex + 1) + filePath + ' ';
+        const newValue = lastSlashIndex !== -1 ? value.slice(0, lastSlashIndex).trim() : value.trim();
         onChange(newValue);
         setShowFileSuggestions(false);
         if (onFileSelect) {
@@ -156,31 +161,80 @@ export function ChatInput({ value, onChange, onSubmit, placeholder, disabled, lo
                 </div>
             )}
 
-            <textarea
-                ref={textareaRef}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder={placeholder}
-                disabled={disabled}
-                rows={1}
+            {/* Input Container with Tags */}
+            <div 
                 className={cn(
-                    "w-full rounded-xl px-4 py-3 pr-12 focus:outline-none focus:ring-2 transition-all resize-none min-h-[48px] max-h-[200px]",
+                    "w-full rounded-xl px-4 py-3 pr-12 focus-within:ring-2 transition-all min-h-[56px]",
                     disabled && "opacity-50 cursor-not-allowed"
                 )}
                 style={{
                     background: 'var(--surface)',
                     border: '1px solid var(--border)',
-                    color: 'var(--foreground)',
-                    scrollbarWidth: 'thin',
-                    scrollbarColor: 'var(--border) transparent',
-                    overflowY: 'hidden' // Default to hidden
                 }}
-            />
+            >
+                {/* Model Selector and File Tags Row */}
+                <div className="flex items-center gap-2 mb-2">
+                    {/* Model Selector */}
+                    {onModelChange && (
+                        <div className="shrink-0">
+                            <ModelSelector onModelChange={onModelChange} compact />
+                        </div>
+                    )}
+                    
+                    {/* Selected Files Tags */}
+                    {selectedFiles.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                            {selectedFiles.map((filePath) => (
+                            <div
+                                key={filePath}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono transition-colors"
+                                style={{
+                                    background: '#10b981',
+                                    color: '#fff',
+                                }}
+                            >
+                                <FileCode className="w-3 h-3 shrink-0" />
+                                <span className="truncate max-w-[150px] sm:max-w-[250px]">{filePath}</span>
+                                {onRemoveFile && (
+                                    <button
+                                        onClick={() => onRemoveFile(filePath)}
+                                        className="hover:bg-white/20 rounded p-0.5 transition-colors"
+                                        type="button"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                )}
+                            </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                <textarea
+                    ref={textareaRef}
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={placeholder}
+                    disabled={disabled}
+                    rows={1}
+                    className={cn(
+                        "w-full bg-transparent focus:outline-none resize-none min-h-[24px] max-h-[150px]",
+                        disabled && "cursor-not-allowed"
+                    )}
+                    style={{
+                        color: 'var(--foreground)',
+                        scrollbarWidth: 'thin',
+                        scrollbarColor: 'var(--border) transparent',
+                        overflowY: 'hidden'
+                    }}
+                />
+            </div>
+            
             <button
                 type="submit"
                 disabled={!value.trim() || loading || disabled}
-                className="absolute right-2 bottom-2 p-2 transition-colors disabled:opacity-50"
+                className="absolute right-3 bottom-3 p-2 transition-colors disabled:opacity-50"
                 style={{ color: 'var(--accent)' }}
             >
                 <Send className="w-5 h-5" />

@@ -171,7 +171,8 @@ export async function answerWithContext(
   context: string,
   repoDetails: { owner: string; repo: string },
   profileData?: any,
-  history: { role: "user" | "model"; content: string }[] = []
+  history: { role: "user" | "model"; content: string }[] = [],
+  selectedModel?: string
 ): Promise<string> {
   const historyText = history.map(msg => `${msg.role === "user" ? "User" : "RepoInfo"}: ${msg.content}`).join("\n\n");
 
@@ -230,7 +231,7 @@ export async function answerWithContext(
     Answer:
     `;
 
-  const result = await safeGenerateContent(prompt);
+  const result = await safeGenerateContent(prompt, selectedModel);
   return result.response.text();
 }
 
@@ -239,7 +240,8 @@ export async function* answerWithContextStream(
   context: string,
   repoDetails: { owner: string; repo: string },
   profileData?: any,
-  history: { role: "user" | "model"; content: string }[] = []
+  history: { role: "user" | "model"; content: string }[] = [],
+  selectedModel?: string
 ): AsyncGenerator<string> {
   const historyText = history.map(msg => `${msg.role === "user" ? "User" : "RepoInfo"}: ${msg.content}`).join("\n\n");
 
@@ -268,7 +270,7 @@ export async function* answerWithContextStream(
     Answer:
   `;
 
-  const result = await safeGenerateContentStream(prompt);
+  const result = await safeGenerateContentStream(prompt, selectedModel);
 
   for await (const chunk of result.stream) {
     const text = chunk.text();

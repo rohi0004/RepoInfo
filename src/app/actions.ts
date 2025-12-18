@@ -150,7 +150,8 @@ export async function generateAnswer(
     repoDetails: { owner: string; repo: string },
     history: { role: "user" | "model"; content: string }[] = [],
     profileData?: any, // Optional profile data
-    visitorId?: string
+    visitorId?: string,
+    selectedModel?: string
 ): Promise<string> {
     // Server-side allowance check (authoritative)
     try {
@@ -201,7 +202,7 @@ export async function generateAnswer(
         console.error("Analytics tracking failed:", e);
     }
 
-    return await answerWithContext(query, context, repoDetails, profileData, history);
+    return await answerWithContext(query, context, repoDetails, profileData, history, selectedModel);
 }
 
 /**
@@ -213,7 +214,8 @@ export async function* generateAnswerStream(
     repoDetails: { owner: string; repo: string },
     history: { role: "user" | "model"; content: string }[] = [],
     profileData?: any, // Optional profile data
-    visitorId?: string
+    visitorId?: string,
+    selectedModel?: string
 ): AsyncGenerator<string> {
     // Server-side allowance check (authoritative)
     try {
@@ -249,7 +251,7 @@ export async function* generateAnswerStream(
         console.error("Analytics tracking failed:", e);
     }
 
-    const stream = answerWithContextStream(query, context, repoDetails, profileData, history);
+    const stream = answerWithContextStream(query, context, repoDetails, profileData, history, selectedModel);
     for await (const chunk of stream) {
         yield chunk;
     }

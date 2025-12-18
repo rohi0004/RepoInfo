@@ -202,7 +202,7 @@ export async function generateAnswer(
         console.error("Analytics tracking failed:", e);
     }
 
-    return await answerWithContext(query, context, repoDetails, profileData, history, selectedModel);
+    return await answerWithContext(query, context, repoDetails, profileData, history);
 }
 
 /**
@@ -251,7 +251,7 @@ export async function* generateAnswerStream(
         console.error("Analytics tracking failed:", e);
     }
 
-    const stream = answerWithContextStream(query, context, repoDetails, profileData, history, selectedModel);
+    const stream = answerWithContextStream(query, context, repoDetails, profileData, history);
     for await (const chunk of stream) {
         yield chunk;
     }

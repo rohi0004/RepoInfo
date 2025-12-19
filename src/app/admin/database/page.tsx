@@ -288,6 +288,40 @@ export default function AdminDatabasePage() {
                             >
                                 Record Payment
                             </button>
+                            <button
+                                onClick={async () => {
+                                    if (!confirm('Grant unlimited access to ALL visitors? This will update every visitor record.')) return;
+                                    setLoading(true);
+                                    setError(null);
+                                    setResult(null);
+                                    try {
+                                        let successCount = 0;
+                                        for (const v of allVisitors) {
+                                            try {
+                                                const res = await fetch('/api/billing/test-unlimited', {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ visitorId: v.visitorId })
+                                                });
+                                                const data = await res.json();
+                                                if (data?.success) successCount++;
+                                            } catch (e) {
+                                                // ignore individual errors
+                                            }
+                                        }
+                                        loadVisitors();
+                                        setResult({ success: true, message: `Unlimited granted to ${successCount} visitors` });
+                                        setTimeout(() => setResult(null), 5000);
+                                    } catch (e: any) {
+                                        setError(e.message || 'Failed to grant to all');
+                                    } finally {
+                                        setLoading(false);
+                                    }
+                                }}
+                                className="flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-3 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm sm:text-base font-medium hover:opacity-90 transition-all whitespace-nowrap"
+                            >
+                                Grant All Unlimited
+                            </button>
                         </div>
                     </div>
                 </div>

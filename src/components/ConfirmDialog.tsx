@@ -12,7 +12,7 @@ interface ConfirmDialogProps {
     confirmText?: string;
     cancelText?: string;
     confirmVariant?: "danger" | "primary";
-    onConfirm: () => void;
+    onConfirm: () => void | Promise<void>;
     onCancel: () => void;
 }
 
@@ -42,7 +42,7 @@ export function ConfirmDialog({
     return createPortal(
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+                <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 pointer-events-auto">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -93,9 +93,17 @@ export function ConfirmDialog({
                                 {cancelText}
                             </button>
                             <button
-                                onClick={() => {
-                                    onConfirm();
-                                    onCancel();
+                                onClick={async () => {
+                                    try {
+                                        const maybePromise = onConfirm();
+                                        if (maybePromise && typeof (maybePromise as any).then === 'function') {
+                                            await maybePromise;
+                                        }
+                                    } catch (e) {
+                                        console.error('ConfirmDialog onConfirm error', e);
+                                    } finally {
+                                        onCancel();
+                                    }
                                 }}
                                 className={`flex-1 px-4 py-2.5 rounded-lg font-medium transition-colors ${confirmButtonStyles}`}
                             >

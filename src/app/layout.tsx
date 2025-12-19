@@ -4,7 +4,6 @@ import { Toaster } from "sonner";
 import "./globals.css";
 import JsonLd from "./components/json-ld";
 import ThemeProviderWrapper from "../components/ThemeProviderWrapper";
-import ThemeToggle from "../components/ThemeToggle";
 import ToasterWrapper from "../components/ToasterWrapper";
 
 const montserrat = Montserrat({
@@ -22,7 +21,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://RepoInfo-ai.vercel.app"),
+  metadataBase: new URL("https://repoinfo.in"),
   applicationName: "RepoInfo",
   title: {
     default: "RepoInfo - Stop reading it! Start talking to it!",
@@ -64,7 +63,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "RepoInfo - Stop reading it! Start talking to it!",
     description: "Agentic CAG-powered analysis for GitHub repositories. Chat with your codebase, generate visual flowcharts, uncover deep insights, and accelerate development with AI-driven repository intelligence.",
-    url: "https://RepoInfo-ai.vercel.app",
+    url: "https://repoinfo.in",
     siteName: "RepoInfo",
     images: [
       {
@@ -84,6 +83,9 @@ export const metadata: Metadata = {
     images: ["/RepoInfo.png"],
     creator: "@RepoInfo",
   },
+  verification: {
+    google: "6vgb5PZvNQbUwcjBZdlnovgxPqVn-H_m4gIYIctRcns",
+  },
   robots: {
     index: true,
     follow: true,
@@ -95,9 +97,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: "UkRCYeGXDptF64Z3y2sS0d2AUkCSuirzjRZQJUz1iEQ",
-  },
+  // Note: Add search engine verification tokens for `repoinfo.in` here when available.
 };
 
 export default function RootLayout({
@@ -107,11 +107,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${montserrat.variable}`} suppressHydrationWarning>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="preload" as="image" href="/RepoInfo.png" />
+      </head>
       <body className="antialiased font-sans" suppressHydrationWarning style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
         <JsonLd />
           <ThemeProviderWrapper>
           {children}
-          <ThemeToggle />
           <ToasterWrapper />
         </ThemeProviderWrapper>
       </body>

@@ -6,6 +6,6 @@ export default function robots(): MetadataRoute.Robots {
             userAgent: "*",
             allow: "/",
         },
-        sitemap: "https://RepoInfo-ai.vercel.app/sitemap.xml",
+        sitemap: "https://repoinfo.in/sitemap.xml",
     };
 }

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { File, Folder, FolderOpen, GitBranch, ChevronRight, ChevronDown, X, AlertCircle, Star, GitFork, CircleDot, Calendar } from "lucide-react";
 import type { FileNode, GitHubRepo } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import ThemeToggle from "./ThemeToggle";
 
 interface RepoSidebarProps {
     fileTree: FileNode[];
@@ -245,6 +246,11 @@ export function RepoSidebar({ fileTree, repoName, isOpen, onClose, onFileDoubleC
                         </button>
                     </div>
                 )}
+
+                {/* Theme toggle placed at bottom-right of sidebar */}
+                <div className="relative">
+                    <ThemeToggle insideSidebar={true} />
+                </div>
             </div>
 
             {/* Hidden Files Modal */}

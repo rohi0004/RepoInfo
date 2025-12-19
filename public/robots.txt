@@ -1,0 +1,10 @@
+User-agent: *
+Disallow:
+
+# Link to sitemap
+Sitemap: https://repoinfo.in/sitemap.xml
+
+# Helpful crawl-delay for some crawlers (optional)
+# Crawl-delay: 10
+
+# Allow all user agents full access; add specific disallows if needed later

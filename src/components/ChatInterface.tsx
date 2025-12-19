@@ -14,6 +14,7 @@ import { validateMermaidSyntax, sanitizeMermaidCode, getFallbackTemplate, genera
 import { saveConversation, loadConversation, clearConversation } from "@/lib/storage";
 import { getSelectedModel } from "@/lib/models";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { CongratsModal } from "./CongratsModal";
 import { CodeBlock } from "./CodeBlock";
 import { ChatInput } from "./ChatInput";
 import { ModelSelector } from "./ModelSelector";
@@ -215,6 +216,8 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
     const [scanning, setScanning] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [initialized, setInitialized] = useState(false);
+    const [showCongratsModal, setShowCongratsModal] = useState(false);
+    const [congratsVisitorId, setCongratsVisitorId] = useState<string | null>(null);
     const [showClearConfirm, setShowClearConfirm] = useState(false);
     const [selectedModel, setSelectedModel] = useState<string>('');
     const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
@@ -228,6 +231,31 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
     useEffect(() => {
         setSelectedModel(getSelectedModel());
     }, []);
+
+    // Handler to claim unlimited in dev mode
+    const claimUnlimitedDev = async (visitorId: string | null) => {
+        if (!visitorId) return;
+        try {
+            // Call the test-unlimited endpoint used by admin pages
+            const res = await fetch('/api/billing/test-unlimited', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ visitorId })
+            });
+            const data = await res.json();
+            if (data && data.success) {
+                toast.success('Temporary unlimited access granted for development/testing.', { duration: 4000 });
+                setShowCongratsModal(false);
+                // store a flag so user doesn't see popup again
+                localStorage.setItem('dev_unlimited_granted', '1');
+            } else {
+                toast.error('Failed to grant unlimited access: ' + (data.error || 'unknown'));
+            }
+        } catch (e: any) {
+            console.error('Failed to claim dev unlimited:', e);
+            toast.error('Failed to grant unlimited access');
+        }
+    };
 
     // Fetch owner profile on mount
     useEffect(() => {
@@ -347,6 +375,18 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                 }
                 
                 if (!checkData.allowed) {
+                    // If we're running on localhost or in a dev preview, offer a friendly free unlimited grant popup
+                    const hostname = window.location.hostname;
+                    const isDevEnv = hostname === 'localhost' || hostname === '127.0.0.1' || (window as any).__DEV_MODE === true;
+
+                    if (isDevEnv) {
+                        // Show congratulations modal and allow claiming unlimited access
+                        setCongratsVisitorId(visitorId);
+                        setShowCongratsModal(true);
+                        // do not redirect; allow the flow to continue after user claims
+                        return;
+                    }
+
                     toast.error("Query limit reached", {
                         description: "You've used all 5 free queries. Upgrade to continue!",
                         duration: 5000,
@@ -878,6 +918,28 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                 confirmVariant="danger"
                 onConfirm={handleClearChat}
                 onCancel={() => setShowClearConfirm(false)}
+            />
+            <CongratsModal
+                isOpen={showCongratsModal}
+                title="Congratulations! 🎉"
+                message={
+                    <>
+                        <p>The site is now live and publicly accessible. However, the payment gateway is still under development. To ensure uninterrupted usage, you have been granted temporary unlimited access for evaluation and testing purposes.</p>
+
+                        <p className="mt-3 font-medium">Please note:</p>
+                        <ul className="list-disc ml-5 mt-2 text-sm">
+                            <li>This access is temporary</li>
+                            <li>It is provided while payment integration is being finalized</li>
+                            <li>Full access rules will apply once payments are enabled</li>
+                        </ul>
+
+                        <p className="mt-3">Thank you for using the platform and supporting us during this phase.</p>
+                    </>
+                }
+                confirmText="Claim Temporary Access"
+                cancelText="Maybe Later"
+                onConfirm={() => claimUnlimitedDev(congratsVisitorId)}
+                onCancel={() => setShowCongratsModal(false)}
             />
         </div>
     );

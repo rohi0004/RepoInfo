@@ -7,7 +7,12 @@ export default function JsonLd() {
                     "@context": "https://schema.org",
                     "@type": "WebSite",
                     name: "RepoInfo",
-                    url: "https://RepoInfo-ai.vercel.app",
+                    url: "https://repoinfo.in",
+                    potentialAction: {
+                        "@type": "SearchAction",
+                        target: "https://repoinfo.in/?q={search_term_string}",
+                        "query-input": "required name=search_term_string"
+                    }
                 }),
             }}
         />

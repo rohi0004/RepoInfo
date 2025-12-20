@@ -31,7 +31,7 @@ export default function SignupPage() {
       });
 
       if (res.status === 201) {
-        router.push('/discover');
+        router.push('/login');
         return;
       }
 

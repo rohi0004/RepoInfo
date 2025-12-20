@@ -28,6 +28,9 @@ export async function POST(req: Request) {
       throw createErr;
     }
 
+    if (!user) {
+      return NextResponse.json({ ok: false, message: 'User creation failed' }, { status: 500 });
+    }
     const { sessionId, expiresAt } = await createSession(user._id);
 
     const maxAge = Math.floor((new Date(expiresAt).getTime() - Date.now()) / 1000);

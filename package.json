@@ -20,6 +20,7 @@
     "@typescript-eslint/parser": "^8.47.0",
     "@vercel/kv": "^3.0.0",
     "adm-zip": "^0.5.16",
+    "bcryptjs": "^2.4.3",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.26",
     "gpt-tokenizer": "^3.4.0",
@@ -52,6 +53,7 @@
   "devDependencies": {
     "@tailwindcss/typography": "^0.5.19",
     "@types/babel__traverse": "^7.28.0",
+    "@types/bcryptjs": "^3.0.0",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.4",
     "@types/pdfkit": "^0.17.4",

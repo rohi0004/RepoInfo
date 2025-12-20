@@ -1,4 +1,5 @@
 import { RepoLoader } from '@/components/RepoLoader';
+import ProfileMenuClient from "./ProfileMenuClient";
 import type { Metadata } from 'next';
 import { getRepo, getRepoReadme } from '@/lib/github';
 import { promises as fs } from 'fs';
@@ -171,16 +172,10 @@ export default async function RepoPage({ params }: { params: any }) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
       <main>
-        <section aria-labelledby="repo-summary" className="max-w-4xl mx-auto px-4 py-6">
-          <h1 id="repo-summary" className="text-2xl font-bold">{owner}/{repo}</h1>
-          {ld.description && <p className="mt-2 text-sm text-muted">{ld.description}</p>}
-          {readmeSnippet && (
-            <article className="mt-3 prose max-w-none text-sm" style={{ color: 'var(--muted)' }}>
-              <p>{readmeSnippet}</p>
-            </article>
-          )}
-        </section>
-
+        {/* Profile menu is client-only, rendered here directly */}
+        <div style={{ position: "fixed", top: 18, right: 24, zIndex: 100 }}>
+          <ProfileMenuClient />
+        </div>
         <RepoLoader query={query} />
       </main>
     </>

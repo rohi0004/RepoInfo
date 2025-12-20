@@ -249,7 +249,7 @@ export function RepoSidebar({ fileTree, repoName, isOpen, onClose, onFileDoubleC
 
                 {/* Theme toggle placed at bottom-right of sidebar */}
                 <div className="relative">
-                    <ThemeToggle insideSidebar={true} />
+                    {/* ThemeToggle removed: now inside profile menu */}
                 </div>
             </div>
 

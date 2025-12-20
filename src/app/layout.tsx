@@ -5,6 +5,7 @@ import "./globals.css";
 import JsonLd from "./components/json-ld";
 import ThemeProviderWrapper from "../components/ThemeProviderWrapper";
 import ToasterWrapper from "../components/ToasterWrapper";
+import ClientProfileMenuWrapper from "../components/ClientProfileMenuWrapper";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -114,8 +115,12 @@ export default function RootLayout({
       </head>
       <body className="antialiased font-sans" suppressHydrationWarning style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
         <JsonLd />
-          <ThemeProviderWrapper>
-          {children}
+        <ThemeProviderWrapper>
+          <div className="relative min-h-screen">
+            {/* Profile button at top right */}
+            {/* Profile menu removed from global layout; will be placed only on repo page */}
+            {children}
+          </div>
           <ToasterWrapper />
         </ThemeProviderWrapper>
       </body>

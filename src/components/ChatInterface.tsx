@@ -240,14 +240,16 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
         if (!visitorId) return;
         try {
             // Call the test-unlimited endpoint used by admin pages
+            // Request 10 days of temporary unlimited access in dev mode
             const res = await fetch('/api/billing/test-unlimited', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ visitorId })
+                body: JSON.stringify({ visitorId, durationDays: 10 })
             });
             const data = await res.json();
             if (data && data.success) {
-                toast.success('Temporary unlimited access granted for development/testing.', { duration: 4000 });
+                const expiresAt = data.expiresAt ? new Date(data.expiresAt) : null;
+                toast.success(`Temporary unlimited access granted${expiresAt ? ` until ${expiresAt.toLocaleString()}` : ''}.`, { duration: 6000 });
                 setShowCongratsModal(false);
                 // store a flag so user doesn't see popup again
                 localStorage.setItem('dev_unlimited_granted', '1');
@@ -380,7 +382,26 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                 if (!checkData.allowed) {
                     // If we're running on localhost or in a dev preview, offer a friendly free unlimited grant popup
                     const hostname = window.location.hostname;
-                    const isDevEnv = hostname === 'localhost' || hostname === '127.0.0.1' || (window as any).__DEV_MODE === true;
+                    const params = new URLSearchParams(window.location.search);
+                    const envFlag = (process.env.NEXT_PUBLIC_DEV_MODE === '1' || process.env.NEXT_PUBLIC_DEV_MODE === 'true' || process.env.NEXT_PUBLIC_DEV_UNLIMITED === '1' || process.env.NEXT_PUBLIC_DEV_UNLIMITED === 'true');
+                    // Support a comma-separated list of hosts that should be treated as dev previews (e.g. preview domains)
+                    const hostsRaw = process.env.NEXT_PUBLIC_DEV_HOSTS || '';
+                    const allowedHosts = hostsRaw.split(',').map(s => s.trim()).filter(Boolean);
+                    const hostMatches = allowedHosts.some(h => {
+                        if (!h) return false;
+                        // exact match or endsWith to allow subdomains (e.g. preview--app.render.com)
+                        return hostname === h || hostname.endsWith(h) || hostname.includes(h);
+                    });
+
+                    const isDevEnv = hostname === 'localhost'
+                        || hostname === '127.0.0.1'
+                        || (window as any).__DEV_MODE === true
+                        || params.has('dev_unlimited')
+                        || params.has('dev')
+                        || localStorage.getItem('dev_unlimited_enabled') === '1'
+                        || localStorage.getItem('dev_unlimited_granted') === '1'
+                        || envFlag
+                        || hostMatches;
 
                     if (isDevEnv) {
                         // Show congratulations modal and allow claiming unlimited access

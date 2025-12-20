@@ -113,6 +113,28 @@ export async function checkAllowance(visitorId: string) {
     };
   }
 
+  // Support temporary access windows via activeUntil timestamp (ms). If activeUntil is in the future, treat as temporary unlimited.
+  try {
+    const activeUntil = (billing as any).activeUntil;
+    if (activeUntil) {
+      const activeDate = activeUntil instanceof Date ? activeUntil : new Date(activeUntil);
+      if (!isNaN(activeDate.getTime()) && activeDate.getTime() > Date.now()) {
+        console.log(`✅ Temporary access active until ${activeDate.toISOString()} for ${visitorId}`);
+        return {
+          allowed: true,
+          remaining: -1,
+          allowedTotal: Number.POSITIVE_INFINITY,
+          usageCount: usage.queryCount || 0,
+          billing,
+          visitorExists,
+          temporaryAccessUntil: activeDate.getTime()
+        };
+      }
+    }
+  } catch (e) {
+    console.warn('checkAllowance activeUntil parse failed', e);
+  }
+
   const allowedTotal = FREE_QUERIES + ((billing as any).extraQueries || 0);
   const remaining = Math.max(0, allowedTotal - (usage.queryCount || 0));
 

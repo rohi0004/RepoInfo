@@ -4,7 +4,7 @@ import { NextResponse } from 'next/server';
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const { visitorId, planId } = body;
+        const { visitorId, planId, durationDays } = body;
         
         if (!visitorId) {
             return NextResponse.json({ error: 'Missing visitorId' }, { status: 400 });
@@ -32,7 +32,9 @@ export async function POST(req: Request) {
 
         // Update billing data with plan information in MongoDB
         const { updateBillingData, checkAllowance } = await import('@/lib/billing-mongodb');
-        const activeUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
+        // Allow callers to request a custom duration (in days). Default to 365 days when not provided.
+        const days = Number(durationDays) && Number(durationDays) > 0 ? Number(durationDays) : 365;
+        const activeUntil = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
         await updateBillingData(visitorId, actualPlanId, grant, activeUntil, true);
         console.log(`✅ Updated billing data for visitor ${visitorId}`);
 
@@ -44,6 +46,7 @@ export async function POST(req: Request) {
             success: true, 
             visitorId,
             unlimited: true,
+            expiresAt: activeUntil.toISOString(),
             allowanceCheck: billingCheck
         });
     } catch (e: any) {

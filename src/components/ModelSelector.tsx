@@ -10,14 +10,14 @@ interface ModelSelectorProps {
     compact?: boolean;
 }
 
-const categoryIcons = {
+const categoryIcons: Record<string, any> = {
     coding: Brain,
     general: Activity,
     reasoning: Sparkles,
     fast: Zap,
 };
 
-const categoryColors = {
+const categoryColors: Record<string, string> = {
     coding: 'text-purple-500',
     general: 'text-blue-500',
     reasoning: 'text-yellow-500',

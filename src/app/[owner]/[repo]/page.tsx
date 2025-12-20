@@ -4,14 +4,9 @@ import { getRepo, getRepoReadme } from '@/lib/github';
 import { promises as fs } from 'fs';
 import path from 'path';
 
-interface PageProps {
-  params: Promise<{ owner: string; repo: string }> | { owner: string; repo: string };
-  searchParams?: Record<string, string | string[] | undefined>;
-}
-
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const resolvedParams = await params;
-  const { owner, repo } = resolvedParams;
+export async function generateMetadata({ params }: { params: any }): Promise<Metadata> {
+  const resolvedParams = await Promise.resolve(params);
+  const { owner, repo } = resolvedParams as { owner: string; repo: string };
   const title = `${owner}/${repo} — RepoInfo`;
 
   // Try to fetch repository details to produce richer metadata (server-side)
@@ -47,9 +42,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   } as Metadata;
 }
 
-export default async function RepoPage({ params }: PageProps) {
-  const resolvedParams = await params;
-  const { owner, repo } = resolvedParams;
+export default async function RepoPage({ params }: { params: any }) {
+  const resolvedParams = await Promise.resolve(params);
+  const { owner, repo } = resolvedParams as { owner: string; repo: string };
   const query = `${owner}/${repo}`;
 
   // Fetch README server-side so search engines can index repository content.

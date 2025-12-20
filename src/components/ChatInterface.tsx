@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Send, Loader2, FileCode, ChevronRight, ArrowLeft, Sparkles, Github, Menu, MessageCircle, Shield, AlertTriangle, Download, CheckCircle, Info, Trash2 } from "lucide-react";
 import { BotIcon } from "@/components/icons/BotIcon";
@@ -7,7 +9,8 @@ import { toast } from "sonner";
 import { analyzeRepoFiles, fetchRepoFiles, generateAnswer, generateAnswerStream, scanRepositoryVulnerabilities, fetchProfile, fetchFileContent } from "@/app/actions";
 import { cn } from "@/lib/utils";
 import mermaid from "mermaid";
-import html2canvas from "html2canvas-pro";
+import * as html2canvasModule from "html2canvas-pro";
+const html2canvas = (html2canvasModule as any).default ?? (html2canvasModule as any);
 import { EnhancedMarkdown } from "./EnhancedMarkdown";
 import { countMessageTokens, formatTokenCount, getTokenWarningLevel, isRateLimitError, getRateLimitErrorMessage, MAX_TOKENS } from "@/lib/tokens";
 import { validateMermaidSyntax, sanitizeMermaidCode, getFallbackTemplate, generateMermaidFromJSON } from "@/lib/diagram-utils";

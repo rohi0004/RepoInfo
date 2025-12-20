@@ -2,7 +2,6 @@ import type { NextConfig } from "next";
 import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
-  turbopack: {}, // Silence Turbopack warning for webpack-based next-pwa
   experimental: {
     serverActions: {
       bodySizeLimit: '5mb',

@@ -5,7 +5,8 @@ import mermaid from "mermaid";
 import { validateMermaidSyntax, sanitizeMermaidCode, getFallbackTemplate, generateMermaidFromJSON } from "@/lib/diagram-utils";
 import { Download, X, Maximize2, ZoomIn, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { html2canvas } from "html2canvas-pro";
+import * as html2canvasModule from "html2canvas-pro";
+const html2canvas = (html2canvasModule as any).default ?? (html2canvasModule as any);
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 

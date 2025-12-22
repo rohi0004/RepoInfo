@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -32,6 +33,19 @@ export default function LoginPage() {
         if (role === 'admin' || data?.user?.email === 'admin@gmail.com') {
           router.push('/admin/stats');
           return;
+        }
+        // If a `next` parameter was provided (e.g. /login?next=/pricing?...), redirect there.
+        const nextParam = searchParams?.get?.('next');
+        if (nextParam) {
+          // Only allow internal paths to prevent open redirect vulnerabilities
+          if (nextParam.startsWith('/')) {
+            router.push(nextParam);
+            return;
+          } else {
+            // Fallback: if it's an absolute URL, navigate the browser directly
+            window.location.href = nextParam;
+            return;
+          }
         }
 
         router.push('/discover');

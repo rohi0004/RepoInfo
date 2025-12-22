@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "node ./scripts/dev-fallback.js",
+    "test": "vitest --environment jsdom",
     "test:mongodb": "node ./scripts/test-mongodb-conn.js",
     "build": "next build",
     "start": "next start",
@@ -51,6 +52,10 @@
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^14.0.0",
+    "vitest": "^0.34.6",
+    "jsdom": "^21.1.0",
     "@tailwindcss/typography": "^0.5.19",
     "@types/babel__traverse": "^7.28.0",
     "@types/node": "^20",

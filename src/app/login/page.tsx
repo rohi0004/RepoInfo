@@ -1,13 +1,24 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const [nextParam, setNextParam] = useState<string | null>(null);
+
+  // Read `next` query param on the client to avoid using next/navigation's
+  // `useSearchParams` which can trigger a CSR bailout requiring Suspense.
+  useEffect(() => {
+    try {
+      const qp = new URLSearchParams(window.location.search).get('next');
+      setNextParam(qp);
+    } catch (e) {
+      setNextParam(null);
+    }
+  }, []);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -35,15 +46,15 @@ export default function LoginPage() {
           return;
         }
         // If a `next` parameter was provided (e.g. /login?next=/pricing?...), redirect there.
-        const nextParam = searchParams?.get?.('next');
-        if (nextParam) {
+        const nextParamLocal = nextParam;
+        if (nextParamLocal) {
           // Only allow internal paths to prevent open redirect vulnerabilities
-          if (nextParam.startsWith('/')) {
-            router.push(nextParam);
+          if (nextParamLocal.startsWith('/')) {
+            router.push(nextParamLocal);
             return;
           } else {
             // Fallback: if it's an absolute URL, navigate the browser directly
-            window.location.href = nextParam;
+            window.location.href = nextParamLocal;
             return;
           }
         }

@@ -1,82 +1,125 @@
-"use client";
-
+import { Star, GitFork } from "lucide-react";
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { ExternalLink, Star, GitFork, Code } from "lucide-react";
+import { Card } from "./ui/card";
 
 interface RepoCardProps {
-    name: string;
-    owner: string;
-    description?: string;
-    stars?: number;
-    forks?: number;
-    language?: string;
+  name: string;
+  owner: string;
+  description?: string;
+  language?: string;
+  stars?: number;
+  forks?: number;
+  topics?: string[];
+  isHacktoberfest?: boolean;
 }
 
-export function RepoCard({ name, owner, description, stars, forks, language }: RepoCardProps) {
-    return (
-        <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="my-4 group"
-        >
-            <div className="relative bg-zinc-900 border border-white/10 rounded-xl p-5 hover:border-purple-600/50 transition-all duration-300">
-                {/* Gradient glow on hover */}
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl blur opacity-0 group-hover:opacity-20 transition duration-500" />
+export function RepoCard({
+  name,
+  owner,
+  description,
+  language,
+  stars,
+  forks,
+  topics,
+  isHacktoberfest,
+}: RepoCardProps) {
+  return (
+    <Link href={`/${owner}/${name}`} className="block w-full max-w-3xl mx-auto min-w-0">
+      <Card
+        role="link"
+        aria-label={`Open ${owner}/${name} in chat`}
+        className="
+          w-full
+          p-6
+          rounded-xl
+          border
+          transition-colors duration-200
+          cursor-pointer
 
-                <div className="relative">
-                    {/* Repo name */}
-                    <h3 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
-                        <Code className="w-5 h-5 text-purple-400" />
-                        {owner}/{name}
-                    </h3>
+          bg-white/70 dark:bg-zinc-800/60
+          backdrop-blur-md
 
-                    {/* Description */}
-                    {description && (
-                        <p className="text-zinc-400 text-sm mb-4 line-clamp-2">{description}</p>
-                    )}
+          border-zinc-200/70 dark:border-zinc-600/60
+          hover:border-primary/40
 
-                    {/* Stats */}
-                    <div className="flex items-center gap-4 mb-4 text-xs text-zinc-500">
-                        {language && (
-                            <span className="flex items-center gap-1">
-                                <span className="w-2 h-2 rounded-full bg-blue-400"></span>
-                                {language}
-                            </span>
-                        )}
-                        {stars !== undefined && (
-                            <span className="flex items-center gap-1">
-                                <Star className="w-3 h-3" />
-                                {stars}
-                            </span>
-                        )}
-                        {forks !== undefined && (
-                            <span className="flex items-center gap-1">
-                                <GitFork className="w-3 h-3" />
-                                {forks}
-                            </span>
-                        )}
-                    </div>
+          hover:shadow-lg hover:shadow-primary/10
+          overflow-hidden
+          min-w-0
+          hover:border-primary/70
+        "
+      >
+        <div className="space-y-3">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3 min-w-0">
+            <h3 className="font-semibold text-base text-foreground truncate">
+              <span className="text-zinc-400 text-sm mr-1">{owner}/</span>
+              <span>{name}</span>
+            </h3>
 
-                    {/* Action buttons */}
-                    <div className="flex gap-2">
-                        <Link
-                            href={`/${owner}/${name}`}
-                            className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors text-center"
-                        >
-                            Analyze Repository
-                        </Link>
-                        <a
-                            href={`https://github.com/${owner}/${name}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-lg transition-colors flex items-center gap-2"
-                        >
-                            <ExternalLink className="w-4 h-4" />
-                        </a>
-                    </div>
-                </div>
+            <div className="flex items-center gap-2 shrink-0">
+              {isHacktoberfest && (
+                <span className="
+                  px-2 py-0.5
+                  text-xs rounded-full
+                  bg-orange-200/40 dark:bg-orange-400/10
+                  text-orange-600 dark:text-orange-400
+                  border border-orange-300/40 dark:border-orange-400/20
+                ">
+                  Hacktoberfest
+                </span>
+              )}
+
+              {topics && topics.length > 0 && (
+                <span className="
+                  px-2 py-0.5
+                  text-xs rounded-full
+                  bg-blue-200/40 dark:bg-blue-400/10
+                  text-blue-700 dark:text-blue-300
+                  border border-blue-300/40 dark:border-blue-400/20
+                ">
+                  {topics[0]}
+                </span>
+              )}
             </div>
-        </motion.div>
-    );
+          </div>
+
+          {/* Description */}
+          {description && (
+            <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 min-w-0 break-words">
+              {description}
+            </p>
+          )}
+
+          {/* Footer */}
+          <div className="flex items-center gap-5 text-sm text-muted-foreground min-w-0">
+            {language && (
+              <div className="flex items-center gap-2">
+                <span
+                  className="
+                    w-2.5 h-2.5 rounded-full
+                    bg-emerald-300 dark:bg-emerald-400
+                  "
+                />
+                <span>{language}</span>
+              </div>
+            )}
+
+            {stars !== undefined && (
+              <div className="flex items-center gap-1.5">
+                <Star className="w-4 h-4 opacity-70" />
+                <span>{stars}</span>
+              </div>
+            )}
+
+            {forks !== undefined && (
+              <div className="flex items-center gap-1.5">
+                <GitFork className="w-4 h-4 opacity-70" />
+                <span>{forks}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      </Card>
+    </Link>
+  );
 }

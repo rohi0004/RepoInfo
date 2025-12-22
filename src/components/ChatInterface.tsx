@@ -412,14 +412,15 @@ export function ChatInterface({ repoContext, onToggleSidebar }: ChatInterfacePro
                     }
 
                     toast.error("Query limit reached", {
-                        description: "You've used all 5 free queries. Upgrade to continue!",
+                        description: "You've used all 5 free queries. Please log in to continue.",
                         duration: 5000,
                     });
-                    // Store current URL so we can return after payment
+                    // Store current URL so we can return after payment/login
                     const returnUrl = window.location.pathname + window.location.search;
                     localStorage.setItem('checkout_return_url', returnUrl);
-                    // Redirect user to pricing screen
-                    window.location.href = `/pricing?visitorId=${encodeURIComponent(visitorId)}`;
+                    // Redirect user to login first, with a `next` param pointing to pricing
+                    const pricingUrl = `/pricing?visitorId=${encodeURIComponent(visitorId)}`;
+                    window.location.href = `/login?next=${encodeURIComponent(pricingUrl)}`;
                     return;
                 }
             } catch (err) {

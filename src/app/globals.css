@@ -107,6 +107,8 @@ body {
   font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
   font-weight: 500;
   /* Medium weight for better visibility */
+  /* Prevent horizontal scrolling caused by overflowing content */
+  overflow-x: hidden;
 }
 
 /* Improve text visibility */
@@ -323,4 +325,59 @@ pre code .token.class-name {
 pre code .token.regex,
 pre code .token.important {
   color: #dc2626 !important; /* Red */
+}
+
+/* Feature panel and cards styling */
+.feature-aside {
+  /* Light mode gradient background */
+  background: linear-gradient(90deg, rgba(14,165,169,0.06), rgba(16,185,129,0.04));
+  /* ensure text is readable in light mode */
+  color: var(--foreground);
+}
+
+.dark .feature-aside {
+  /* Dark mode deeper gradient */
+  background: linear-gradient(180deg, #071016 0%, #072226 50%, #021718 100%);
+}
+
+.feature-heading-gradient {
+  background: linear-gradient(90deg, rgb(14,165,169), rgb(16,185,129));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.feature-card {
+  position: relative;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  /* slightly tinted background and stronger border in light mode so cards are visible */
+  background: rgba(14,165,169,0.03);
+  color: inherit;
+  border: 1px solid rgba(14,165,169,0.12);
+  transition: all 220ms ease;
+  /* create double background for gradient border technique */
+  background-origin: padding-box, border-box;
+  background-clip: padding-box, border-box;
+}
+
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 30px rgba(2,6,23,0.45);
+  border: 1px solid transparent;
+  background-image: linear-gradient(rgba(255,255,255,0.01), rgba(255,255,255,0.01)), linear-gradient(90deg, rgb(14,165,169), rgb(16,185,129));
+}
+
+.dark .feature-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.02);
+}
+
+.dark .feature-card:hover {
+  background-image: linear-gradient(rgba(30,41,59,0.85), rgba(30,41,59,0.85)), linear-gradient(180deg, #052126, #02343a);
+}
+
+.feature-card p {
+  margin: 0;
+  color: inherit;
 }

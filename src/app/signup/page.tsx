@@ -55,31 +55,31 @@ export default function SignupPage() {
       <div className="absolute inset-0 bg-gradient-to-tl from-cyan-500/04 via-emerald-500/06 to-transparent pointer-events-none" />
 
       <div className="min-h-screen grid grid-cols-1 md:grid-cols-2">
-        {/* Left feature panel - keep dark/black look like screenshot */}
-        <aside className="hidden md:flex flex-col px-12 py-24" style={{ background: '#000' }}>
+        {/* Left feature panel - gradient background in light/dark modes */}
+        <aside className="hidden md:flex flex-col px-12 py-24 feature-aside text-white">
           <div className="max-w-md text-left mx-auto">
             <div className="mb-8">
-              <div className="text-white font-bold text-xl">RepoInfo</div>
+              <div className="font-bold text-xl">RepoInfo</div>
             </div>
 
-            <h2 className="text-3xl md:text-4xl font-extrabold text-white mb-8">Access repository intelligence instantly</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold feature-heading-gradient mb-8">Access repository intelligence instantly</h2>
 
             <div className="space-y-4">
-                <div className="p-4 rounded-xl border" style={{ borderColor: 'rgba(56,189,248,0.12)', background: 'rgba(255,255,255,0.01)' }}>
-                <p className="text-sm text-white/90">Conduct deep code structure analysis to understand architecture</p>
+              <div className="feature-card">
+                <p className="text-sm">Conduct deep code structure analysis to understand architecture</p>
               </div>
-                <div className="p-4 rounded-xl border" style={{ borderColor: 'rgba(56,189,248,0.12)', background: 'rgba(255,255,255,0.01)' }}>
-                <p className="text-sm text-white/90">Get smart suggestions for dependencies and best practices</p>
+              <div className="feature-card">
+                <p className="text-sm">Get smart suggestions for dependencies and best practices</p>
               </div>
-                <div className="p-4 rounded-xl border" style={{ borderColor: 'rgba(56,189,248,0.12)', background: 'rgba(255,255,255,0.01)' }}>
-                <p className="text-sm text-white/90">Automate workflows and generate code or documentation snippets</p>
+              <div className="feature-card">
+                <p className="text-sm">Automate workflows and generate code or documentation snippets</p>
               </div>
-                <div className="p-4 rounded-xl border" style={{ borderColor: 'rgba(56,189,248,0.12)', background: 'rgba(255,255,255,0.01)' }}>
-                <p className="text-sm text-white/90">Receive guided walkthroughs for onboarding and feature discovery</p>
+              <div className="feature-card">
+                <p className="text-sm">Receive guided walkthroughs for onboarding and feature discovery</p>
               </div>
             </div>
 
-            <p className="mt-10 text-sm text-white/70">Trusted by thousands of developers to quickly understand complex projects.</p>
+            <p className="mt-10 text-sm text-muted">Trusted by thousands of developers to quickly understand complex projects.</p>
           </div>
         </aside>
 

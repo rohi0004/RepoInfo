@@ -26,8 +26,6 @@ export default function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
       <button
         className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 border border-gray-300 text-gray-700 font-medium shadow-sm focus:outline-none"
         onClick={() => setOpen((v) => !v)}
-        onMouseEnter={() => setOpen(true)}
-        onMouseLeave={() => setOpen(false)}
         aria-label="Profile menu"
         style={{ minWidth: 40 }}
       >
@@ -37,21 +35,22 @@ export default function ProfileMenu({ user, onLogout }: ProfileMenuProps) {
       {open && (
         <div
           className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg z-50 p-4"
-          onMouseEnter={() => setOpen(true)}
-          onMouseLeave={() => setOpen(false)}
         >
           <div className="mb-3">
             <div className="font-semibold text-gray-900 text-base">{user.name}</div>
             <div className="text-gray-500 text-sm">{user.email}</div>
           </div>
-          <div className="mb-3">
-            {/* Theme switcher inside profile dropdown */}
-            <React.Suspense fallback={null}>
-              {typeof window !== 'undefined' && (() => {
-                const ThemeToggle = require("./ThemeToggle").default;
-                return <ThemeToggle />;
-              })()}
-            </React.Suspense>
+          <div className="flex items-center justify-between mb-3">
+            <div />
+            <div className="flex gap-2 items-center">
+              {/* Theme switcher placed inline next to Logout */}
+              <React.Suspense fallback={null}>
+                {typeof window !== "undefined" && (() => {
+                  const ThemeToggle = require("./ThemeToggle").default;
+                  return <ThemeToggle inline />;
+                })()}
+              </React.Suspense>
+            </div>
           </div>
           <div className="flex gap-2 justify-end">
             {/* Placeholder for Delete button if needed */}

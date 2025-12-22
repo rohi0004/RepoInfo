@@ -4,7 +4,7 @@ import { useTheme } from "next-themes";
 import { Sun, Moon } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-export default function ThemeToggle({ insideSidebar = false }: { insideSidebar?: boolean }) {
+export default function ThemeToggle({ insideSidebar = false, inline = false }: { insideSidebar?: boolean; inline?: boolean }) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [syncing, setSyncing] = useState(false);
@@ -80,6 +80,12 @@ export default function ThemeToggle({ insideSidebar = false }: { insideSidebar?:
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!mounted) {
+    if (inline) {
+      return (
+        <span className="inline-block w-8 h-8 rounded flex items-center justify-center" />
+      );
+    }
+
     const placeholderClass = insideSidebar ? "absolute right-3 bottom-3" : (isChatPage ? "fixed top-4 right-4 z-50" : "fixed bottom-4 left-4 z-50");
     return (
       <div className={placeholderClass}>
@@ -88,13 +94,13 @@ export default function ThemeToggle({ insideSidebar = false }: { insideSidebar?:
     );
   }
 
-  const containerClass = insideSidebar ? "absolute right-3 bottom-3 z-40" : (isChatPage ? "fixed top-4 right-4 z-50" : "fixed bottom-4 left-4 z-50");
+  const containerClass = inline ? "inline-flex items-center" : (insideSidebar ? "absolute right-3 bottom-3 z-40" : (isChatPage ? "fixed top-4 right-4 z-50" : "fixed bottom-4 left-4 z-50"));
 
   return (
     <div className={containerClass}>
       <button
         aria-label="Toggle theme"
-        className="w-12 h-12 rounded-full flex items-center justify-center shadow-md backdrop-blur border transition-opacity"
+        className={inline ? "w-9 h-9 rounded-md flex items-center justify-center shadow-sm transition-opacity" : "w-12 h-12 rounded-full flex items-center justify-center shadow-md backdrop-blur border transition-opacity"}
         style={{
           background: 'var(--surface)',
           borderColor: 'var(--border)',

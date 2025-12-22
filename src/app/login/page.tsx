@@ -26,6 +26,14 @@ export default function LoginPage() {
 
       if (res.status === 200) {
         // authenticated, server set cookie
+        // Read body to detect admin role
+        const data = await res.json().catch(() => ({}));
+        const role = data?.user?.role || data?.user?.role || null;
+        if (role === 'admin' || data?.user?.email === 'admin@gmail.com') {
+          router.push('/admin/stats');
+          return;
+        }
+
         router.push('/discover');
         return;
       }

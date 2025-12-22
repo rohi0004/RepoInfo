@@ -40,20 +40,20 @@ export default function LandingPage() {
 
             <div className="flex items-center justify-center gap-4">
               <button onClick={async () => {
-                try {
-                  const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
-                  if (res.ok) {
-                    window.location.href = '/discover';
-                  } else {
-                    window.location.href = '/login';
-                  }
-                } catch (e) {
-                  window.location.href = '/login';
-                }
-              }} className="px-8 py-6 text-lg rounded-md inline-flex items-center" style={{ background: 'linear-gradient(90deg, var(--gradient-start), var(--gradient-end))', color: 'white' }}>
-                Get Started
-                <ArrowRight className="w-5 h-5 ml-2" />
-              </button>
+                    try {
+                      const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+                      if (res.ok) {
+                        window.location.href = '/discover';
+                      } else {
+                        window.location.href = '/login';
+                      }
+                    } catch (e) {
+                      window.location.href = '/login';
+                    }
+                }} className="px-8 py-6 text-lg rounded-md inline-flex items-center" style={{ background: 'linear-gradient(90deg, var(--gradient-start), var(--gradient-end))', color: 'white' }}>
+                  Get Started
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </button>
               <button className="px-8 py-6 text-lg rounded-md inline-flex items-center" style={{ border: '1px solid var(--border)', color: 'var(--muted)', background: 'transparent' }}>
                 <Github className="w-5 h-5 mr-2" />
                 View on GitHub
@@ -101,17 +101,10 @@ export default function LandingPage() {
           <div className="mt-20 text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to boost your productivity?</h2>
             <p className="mb-8" style={{ color: 'var(--muted)' }}>Join thousands of developers using RepoInfo</p>
-            <button onClick={async () => {
-                try {
-                  const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
-                  if (res.ok) {
-                    window.location.href = '/discover';
-                  } else {
-                    window.location.href = '/login';
-                  }
-                } catch (e) {
-                  window.location.href = '/login';
-                }
+            <button onClick={() => {
+                // Directly open discover in guest/trial mode. The discover/chat flow
+                // will enforce the 5-query trial and then redirect to login/pricing.
+                window.location.href = '/discover?trial=1';
               }} className="px-10 py-6 text-lg rounded-md inline-flex items-center" style={{ background: 'linear-gradient(90deg, rgba(139,92,246,1), rgba(236,72,153,1))', color: 'white' }}>
               Start Free Trial
               <ArrowRight className="w-5 h-5 ml-2" />

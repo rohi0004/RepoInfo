@@ -4,14 +4,17 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Github, ArrowRight, Loader2, Search, Info } from "lucide-react";
-import { fetchGitHubData } from "../actions";
+import { fetchGitHubData, fetchUserRepos } from "../actions";
 import { CAGBadge } from "@/components/CAGBadge";
+import { RepoCard } from "@/components/RepoCard";
 import { ProjectInfoModal } from "@/components/ProjectInfoModal";
 import Image from "next/image";
 
 export default function Discover() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userRepos, setUserRepos] = useState<any[]>([]);
+  const [showUserRepos, setShowUserRepos] = useState(false);
   const [error, setError] = useState("");
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const router = useRouter();
@@ -22,13 +25,13 @@ export default function Discover() {
     (async () => {
       try {
         const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
-        if (!res.ok) {
-          router.push('/login');
-          return;
-        }
+        // Allow unauthenticated visitors to access /discover (guest/trial mode).
+        // If the user is authenticated, mark auth as checked; otherwise still mark checked
+        // so the page renders for guests without forcing a redirect to login.
         if (!cancelled) setAuthChecked(true);
       } catch (err) {
-        router.push('/login');
+        // On error, allow guest access instead of redirecting to login.
+        if (!cancelled) setAuthChecked(true);
       }
     })();
     return () => { cancelled = true; };
@@ -40,6 +43,8 @@ export default function Discover() {
 
     setLoading(true);
     setError("");
+    setShowUserRepos(false);
+    setUserRepos([]);
 
     try {
       let parsedInput = input.trim();
@@ -47,12 +52,34 @@ export default function Discover() {
       const urlMatch = parsedInput.match(githubUrlPattern);
 
       if (urlMatch) {
+        // If it's a repo URL, go to repo chat as before
         const [, owner, repo] = urlMatch;
         parsedInput = `${owner}/${repo}`;
+        const result = await fetchGitHubData(parsedInput);
+        if (result.error) {
+          setError(result.error);
+        } else {
+          router.push(`/${encodeURIComponent(parsedInput)}`);
+        }
+        setLoading(false);
+        return;
       }
 
-      const result = await fetchGitHubData(parsedInput);
+      // If input is username only (no slash), show user repos below
+      if (!parsedInput.includes("/")) {
+        const repos = await fetchUserRepos(parsedInput);
+        if (repos && repos.length > 0) {
+          setUserRepos(repos);
+          setShowUserRepos(true);
+        } else {
+          setError("No public repositories found for this user.");
+        }
+        setLoading(false);
+        return;
+      }
 
+      // Otherwise, treat as repo search (username/repo)
+      const result = await fetchGitHubData(parsedInput);
       if (result.error) {
         setError(result.error);
       } else {
@@ -96,11 +123,11 @@ export default function Discover() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="z-10 flex flex-col items-center text-center max-w-2xl w-full px-4"
+          className="z-10 flex flex-col items-center text-center  w-full px-4"
         >
           <div className="mb-8 relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-blue-600 to-cyan-600 rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
-            <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl p-4 flex items-center justify-center" style={{ background: 'var(--surface)', border: '2px solid var(--border)' }}>
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-blue-500 to-cyan-400 rounded-2xl blur-md opacity-60 transition-opacity duration-500" />
+            <div className="relative w-20 h-20 md:w-24 md:h-24 rounded-2xl p-4 flex items-center justify-center" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 8px 20px rgba(59,130,246,0.06)' }}>
               <svg
                 viewBox="0 0 100 100"
                 className="w-full h-full"
@@ -143,14 +170,14 @@ export default function Discover() {
           </p>
 
           <form onSubmit={handleSubmit} className="w-full max-w-xl relative group px-2">
-            <div className="flex items-center gap-1 sm:gap-2 p-1.5 sm:p-2 rounded-xl shadow-lg transition-all duration-300 group-hover:shadow-2xl" style={{ background: 'var(--surface)', border: '2px solid var(--border)' }}>
+            <div className="flex items-center gap-1 sm:gap-2 p-1.5 sm:p-2 rounded-xl transition-all duration-300" style={{ background: 'var(--surface)', border: '1px solid var(--border)', boxShadow: '0 8px 30px rgba(15,23,42,0.04)' }}>
               <div className="flex-1 flex items-center gap-2 px-1 sm:px-2">
                 <Search className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" style={{ color: 'var(--muted)' }} />
                 <input
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder="username/repo or GitHub URL"
+                  placeholder="username or username/repo or GitHub URL"
                   className="flex-1 border-none outline-none py-2 sm:py-3 text-xs sm:text-sm md:text-base w-full min-w-0"
                   style={{ background: 'transparent', color: 'var(--foreground)' }}
                 />
@@ -159,7 +186,7 @@ export default function Discover() {
                 type="submit"
                 disabled={loading}
                 className="px-3 sm:px-5 py-2 sm:py-3 rounded-lg font-semibold transition-all duration-300 disabled:opacity-50 shrink-0 hover:scale-105"
-                style={{ background: 'var(--accent)', color: '#fff', boxShadow: '0 4px 14px 0 rgba(112, 221, 181, 0.4)' }}
+                style={{ background: 'linear-gradient(90deg,var(--accent),#3b82f6)', color: '#fff', boxShadow: '0 8px 30px rgba(59,130,246,0.12)' }}
               >
                 {loading ? <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> : <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />}
               </button>
@@ -168,6 +195,66 @@ export default function Discover() {
 
           {error && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-red-500 text-sm">{error}</motion.p>
+          )}
+
+          {/* User Repositories Card View */}
+          {showUserRepos && userRepos.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="w-full max-w-4xl mx-auto mt-8"
+            >
+              <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--accent)' }}>
+                Public Repositories <span className="text-sm font-normal text-zinc-400">({userRepos.length} repositories)</span>
+              </h2>
+                <div
+                className="flex flex-col gap-4 max-h-[420px] overflow-y-auto overflow-x-hidden w-full max-w-full invisible-scrollbar"
+                style={{
+                  WebkitOverflowScrolling: 'touch',
+                  background: 'transparent',
+                  scrollbarWidth: 'none' as any, // Firefox
+                  msOverflowStyle: 'none' as any, // IE 10+
+                }}
+                >
+                {userRepos.slice(0, 20).map((repo, idx) => (
+                  <div
+                  key={repo.repo}
+                  className="transition-transform duration-200 hover:-translate-y-1 hover:scale-[1.01] cursor-pointer"
+                  style={{ zIndex: 2 }}
+                  onClick={() => router.push(`/${encodeURIComponent(input.trim())}/${encodeURIComponent(repo.repo)}`)}
+                  >
+                  <RepoCard
+                    name={repo.repo}
+                    owner={input.trim()}
+                    description={repo.description}
+                    stars={repo.stars}
+                    forks={repo.forks}
+                    language={repo.language}
+                  />
+                  </div>
+                ))}
+                <style jsx>{`
+                  .invisible-scrollbar {
+                    scrollbar-width: none; /* Firefox */
+                    -ms-overflow-style: none; /* IE 10+ */
+                  }
+
+                  .invisible-scrollbar::-webkit-scrollbar {
+                    width: 0;
+                    height: 0;
+                    display: none;
+                  }
+
+                  .invisible-scrollbar::-webkit-scrollbar-thumb {
+                    background: transparent;
+                  }
+                `}</style>
+                </div>
+              {userRepos.length > 4 && (
+                <div className="text-xs text-center mt-2 text-zinc-400">Scroll to see more repositories</div>
+              )}
+            </motion.div>
           )}
         </motion.div>
       </section>

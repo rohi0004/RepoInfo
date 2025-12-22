@@ -25,7 +25,11 @@ export async function POST(req: Request) {
     const isProd = process.env.NODE_ENV === 'production';
     const cookie = `session=${sessionId}; HttpOnly; Path=/; Max-Age=${maxAge}; SameSite=Lax${isProd ? '; Secure' : ''}`;
 
-    return new NextResponse(JSON.stringify({ ok: true, user: { email: user.email, name: user.name || null } }), {
+    // Include role (if set) so client can redirect admin users to admin pages
+    const safeUser = { email: user.email, name: user.name || null };
+    if ((user as any).role) (safeUser as any).role = (user as any).role;
+
+    return new NextResponse(JSON.stringify({ ok: true, user: safeUser }), {
       status: 200,
       headers: { 'Content-Type': 'application/json', 'Set-Cookie': cookie }
     });

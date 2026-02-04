@@ -20,7 +20,7 @@ function getOpenRouterClient() {
 
 // Safe wrapper for OpenRouter generation - maintains Gemini API compatibility
 export async function safeGenerateContent(prompt: string, preferredModel?: string) {
-  const model = preferredModel || 'kwaipilot/kat-coder-pro:free';
+  const model = preferredModel || 'openrouter/free';
   const client = getOpenRouterClient();
 
   try {
@@ -50,7 +50,7 @@ export async function safeGenerateContent(prompt: string, preferredModel?: strin
 
 // Streaming generation function
 export async function safeGenerateContentStream(prompt: string, preferredModel?: string) {
-  const model = preferredModel || 'kwaipilot/kat-coder-pro:free';
+  const model = preferredModel || 'openrouter/free';
   const client = getOpenRouterClient();
 
   try {

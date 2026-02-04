@@ -98,6 +98,76 @@ export default function LandingPage() {
             </ul>
           </div>
 
+          <div className="mt-20">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold mb-3">User guide, screen-by-screen</h2>
+              <p className="max-w-2xl mx-auto" style={{ color: 'var(--muted)' }}>
+                Follow a simple flow from connecting your repo to getting actionable answers. Each step includes a quick
+                example so new users can get started right away.
+              </p>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-6">
+              {[
+                {
+                  step: "01",
+                  title: "Connect your repo",
+                  description: "Step 1: Paste a GitHub URL or upload a zipped project to begin analysis.",
+                  exampleTitle: "Example input",
+                  exampleBody: "https://github.com/acme/payments-service",
+                  accents: "from-cyan-500/10 via-blue-500/5 to-transparent",
+                },
+                {
+                  step: "02",
+                  title: "Ask a focused question",
+                  description: "Step 2: Request specific guidance on architecture, dependencies, or workflows.",
+                  exampleTitle: "Example prompt",
+                  exampleBody: "“Show me the auth flow and where tokens are stored.”",
+                  accents: "from-purple-500/10 via-pink-500/5 to-transparent",
+                },
+                {
+                  step: "03",
+                  title: "Review the answer",
+                  description: "Step 3: Get a structured response with file references and next steps.",
+                  exampleTitle: "Example output",
+                  exampleBody: "Auth flow summary + referenced files + recommendations",
+                  accents: "from-emerald-500/10 via-teal-500/5 to-transparent",
+                },
+              ].map((card) => (
+                <div key={card.step} className="rounded-2xl p-6 h-full" style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}>
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-sm font-semibold px-3 py-1 rounded-full" style={{ background: 'rgba(112,221,181,0.08)', color: 'var(--accent)' }}>
+                      Step {card.step}
+                    </span>
+                    <span className="text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--muted)' }}>Guide</span>
+                  </div>
+                  <h3 className="text-xl font-semibold mb-3">{card.title}</h3>
+                  <p className="mb-6" style={{ color: 'var(--muted)' }}>{card.description}</p>
+
+                  <div className={`rounded-xl p-4 relative overflow-hidden`} style={{ border: '1px solid var(--border)', background: 'rgba(12,18,28,0.6)' }}>
+                    <div className={`absolute inset-0 bg-gradient-to-br ${card.accents}`} />
+                    <div className="relative z-10">
+                      <div className="flex items-center gap-2 mb-3">
+                        <div className="flex gap-1">
+                          <span className="w-2.5 h-2.5 rounded-full bg-red-400/80" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-yellow-400/80" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-green-400/80" />
+                        </div>
+                        <span className="text-xs" style={{ color: 'var(--muted)' }}>RepoInfo</span>
+                      </div>
+                      <p className="text-xs uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--muted)' }}>
+                        {card.exampleTitle}
+                      </p>
+                      <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                        {card.exampleBody}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
           <div className="mt-20 text-center">
             <h2 className="text-3xl font-bold mb-4">Ready to boost your productivity?</h2>
             <p className="mb-8" style={{ color: 'var(--muted)' }}>Join thousands of developers using RepoInfo</p>

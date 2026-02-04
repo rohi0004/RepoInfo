@@ -117,7 +117,7 @@ export async function analyzeCodeQuality(
       }
     `;
 
-        const result = await safeGenerateContent(prompt, 'kwaipilot/kat-coder-pro:free');
+        const result = await safeGenerateContent(prompt, 'openrouter/free');
         const text = result.response.text();
         
         if (!text) {

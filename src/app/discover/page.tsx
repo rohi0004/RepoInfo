@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Github, ArrowRight, Loader2, Search, Info } from "lucide-react";
@@ -9,6 +9,7 @@ import { CAGBadge } from "@/components/CAGBadge";
 import { RepoCard } from "@/components/RepoCard";
 import { ProjectInfoModal } from "@/components/ProjectInfoModal";
 import Image from "next/image";
+import { personaBlueprints } from "@/lib/feature-blueprints";
 
 export default function Discover() {
   const [input, setInput] = useState("");
@@ -19,6 +20,9 @@ export default function Discover() {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const router = useRouter();
   const [authChecked, setAuthChecked] = useState(false);
+  const [activePersona, setActivePersona] = useState(personaBlueprints[0].id);
+  const selectedPersona = personaBlueprints.find((persona) => persona.id === activePersona) ?? personaBlueprints[0];
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -177,6 +181,7 @@ export default function Discover() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
+                  ref={inputRef}
                   placeholder="username or username/repo or GitHub URL"
                   className="flex-1 border-none outline-none py-2 sm:py-3 text-xs sm:text-sm md:text-base w-full min-w-0"
                   style={{ background: 'transparent', color: 'var(--foreground)' }}
@@ -196,6 +201,72 @@ export default function Discover() {
           {error && (
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4 text-red-500 text-sm">{error}</motion.p>
           )}
+
+          <div className="w-full max-w-5xl mt-12">
+            <div className="text-center mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold mb-2">Feature blueprints for your repo</h2>
+              <p className="text-xs sm:text-sm" style={{ color: 'var(--muted)' }}>
+                Choose a persona and drop a ready-made prompt into the search bar.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 mb-6">
+              {personaBlueprints.map((persona) => {
+                const Icon = persona.icon;
+                const isActive = persona.id === selectedPersona.id;
+
+                return (
+                  <button
+                    key={persona.id}
+                    type="button"
+                    onClick={() => setActivePersona(persona.id)}
+                    className="px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-semibold inline-flex items-center gap-2 transition-all"
+                    style={{
+                      border: '1px solid var(--border)',
+                      background: isActive ? 'rgba(112,221,181,0.12)' : 'var(--surface)',
+                      color: isActive ? 'var(--accent)' : 'var(--muted)'
+                    }}
+                  >
+                    <Icon className="w-4 h-4" aria-hidden="true" />
+                    {persona.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid gap-4 sm:gap-6 md:grid-cols-3">
+              {selectedPersona.features.map((feature) => (
+                <div
+                  key={feature.title}
+                  className="rounded-2xl p-4 sm:p-6 h-full flex flex-col"
+                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
+                >
+                  <h3 className="text-base sm:text-lg font-semibold mb-2">{feature.title}</h3>
+                  <p className="text-xs sm:text-sm mb-4" style={{ color: 'var(--muted)' }}>{feature.detail}</p>
+                  <div className="rounded-xl p-3 mb-4 flex-1" style={{ border: '1px solid var(--border)', background: 'rgba(12,18,28,0.4)' }}>
+                    <p className="text-[10px] uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--muted)' }}>
+                      Example prompt
+                    </p>
+                    <p className="text-xs sm:text-sm font-medium" style={{ color: 'var(--foreground)' }}>
+                      {feature.prompt}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setInput(feature.prompt);
+                      inputRef.current?.focus();
+                    }}
+                    className="mt-auto px-3 py-2 rounded-lg text-xs sm:text-sm font-semibold inline-flex items-center justify-center gap-2 transition-all"
+                    style={{ background: 'linear-gradient(90deg,var(--accent),#3b82f6)', color: '#fff' }}
+                  >
+                    Use this prompt
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
           {/* User Repositories Card View */}
           {showUserRepos && userRepos.length > 0 && (

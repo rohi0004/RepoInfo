@@ -141,6 +141,9 @@ export function RepoSidebar({ fileTree, repoName, isOpen, onClose, onFileDoubleC
     const tree = buildTree(fileTree);
     const [showHiddenFiles, setShowHiddenFiles] = useState(false);
     const hasFiles = fileTree && fileTree.length > 0;
+    const vscodeCloneUrl = repoData?.html_url
+        ? `vscode://vscode.git/clone?url=${encodeURIComponent(repoData.html_url)}`
+        : null;
 
     return (
         <>
@@ -207,6 +210,20 @@ export function RepoSidebar({ fileTree, repoName, isOpen, onClose, onFileDoubleC
                             <div className="text-xs" style={{ color: 'var(--sidebar-text)', opacity: 0.6 }}>
                                 📁 {fileTree.length} files
                             </div>
+
+                            {vscodeCloneUrl && (
+                                <a
+                                    href={vscodeCloneUrl}
+                                    className="flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-md transition-colors"
+                                    style={{ background: 'rgba(15,76,58,0.12)', color: 'var(--sidebar-text)', border: '1px solid rgba(255,255,255,0.12)' }}
+                                    title="Clone and open in VS Code"
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 128 128" aria-hidden="true" className="shrink-0">
+                                        <path fill="#22A6F2" d="M120.16 27.2c-2.08-.96-4.64-.56-6.32 1.12L67.2 68.16l-24-18.72-16.8 15.2 24.96 19.52L26.4 103.04l16.8 15.2 24-18.72 46.64 39.84c1.12.96 2.56 1.44 3.84 1.44 0.8 0 1.76-.16 2.56-.56 2.08-.96 3.36-3.04 3.36-5.28V32.48c0-2.24-1.28-4.32-3.36-5.28zM40.16 62.56 15.2 43.04c-1.76-1.44-4.32-1.44-6.08 0L.96 50.4c-1.12 1.12-1.76 2.56-1.76 4.16 0 1.6.64 3.2 1.76 4.16l8.16 7.36 24.96-19.52zM15.2 84.96 40.16 65.44 15.2 45.92 9.12 51.36l-8.16 7.36c-1.12 1.12-1.76 2.56-1.76 4.16 0 1.6.64 3.2 1.76 4.16l8.16 7.36 6.08 5.44z"/>
+                                    </svg>
+                                    Open in VS Code
+                                </a>
+                            )}
                         </div>
                     )}
                 </div>

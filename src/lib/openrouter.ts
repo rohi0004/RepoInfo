@@ -19,7 +19,7 @@ function getOpenRouterClient() {
 
 // Safe wrapper for OpenRouter generation
 export async function safeGenerateContent(prompt: string, preferredModel?: string) {
-  const model = preferredModel || 'kwaipilot/kat-coder-pro:free';
+  const model = preferredModel || 'openrouter/free';
   const client = getOpenRouterClient();
 
   try {

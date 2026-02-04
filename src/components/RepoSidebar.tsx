@@ -141,6 +141,11 @@ export function RepoSidebar({ fileTree, repoName, isOpen, onClose, onFileDoubleC
     const tree = buildTree(fileTree);
     const [showHiddenFiles, setShowHiddenFiles] = useState(false);
     const hasFiles = fileTree && fileTree.length > 0;
+    const cloneUrl = repoData?.clone_url;
+    const handleOpenInVSCode = () => {
+        if (!cloneUrl) return;
+        window.location.href = `vscode://vscode.git/clone?url=${encodeURIComponent(cloneUrl)}`;
+    };
 
     return (
         <>
@@ -181,6 +186,25 @@ export function RepoSidebar({ fileTree, repoName, isOpen, onClose, onFileDoubleC
                                 <p className="text-xs line-clamp-2 leading-relaxed" style={{ color: 'var(--sidebar-text)', opacity: 0.8 }}>
                                     {repoData.description}
                                 </p>
+                            )}
+
+                            {cloneUrl && (
+                                <button
+                                    type="button"
+                                    onClick={handleOpenInVSCode}
+                                    className="w-full flex items-center justify-center gap-2 rounded-md border border-white/10 px-3 py-2 text-xs font-medium transition hover:bg-white/5"
+                                    style={{ color: 'var(--sidebar-text)' }}
+                                >
+                                    <svg
+                                        aria-hidden="true"
+                                        viewBox="0 0 128 128"
+                                        className="h-4 w-4"
+                                        fill="currentColor"
+                                    >
+                                        <path d="M121.7 27.2c3.9-3 2.8-9.2-2-10.9L92.2 5.4c-2.2-.9-4.7-.5-6.5 1.1L39.5 43.4 19.7 28.3c-1.8-1.4-4.3-1.2-5.9.4L2.9 39.6c-1.6 1.6-1.7 4.1-.2 5.9l18.7 22-18.7 22c-1.5 1.8-1.4 4.3.2 5.9l10.9 10.9c1.6 1.6 4.1 1.7 5.9.2l19.8-15.1 46.2 36.9c1.8 1.5 4.4 1.9 6.5 1.1l27.5-10.9c4.8-1.9 5.9-7.8 2-10.9L79.6 64l42.1-36.8zM88.5 93.7 56.1 64l32.4-29.7v59.4z" />
+                                    </svg>
+                                    Open in VS Code
+                                </button>
                             )}
 
                             <div className="flex items-center justify-between text-xs" style={{ color: 'var(--sidebar-text)', opacity: 0.7 }}>

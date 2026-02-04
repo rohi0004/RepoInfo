@@ -51,6 +51,7 @@ export interface GitHubRepo {
   full_name: string;
   description: string | null;
   html_url: string;
+  clone_url: string;
   stargazers_count: number;
   language: string | null;
   forks_count: number;
@@ -133,6 +134,7 @@ export async function getRepo(owner: string, repo: string): Promise<GitHubRepo> 
       full_name: `${owner}/${repo}`,
       description: 'Mock repository — running without GitHub credentials',
       html_url: `https://github.com/${owner}/${repo}`,
+      clone_url: `https://github.com/${owner}/${repo}.git`,
       stargazers_count: 0,
       language: null,
       forks_count: 0,
@@ -163,6 +165,7 @@ export async function getRepo(owner: string, repo: string): Promise<GitHubRepo> 
         full_name: `${owner}/${repo}`,
         description: 'Repository not found (404) or inaccessible',
         html_url: `https://github.com/${owner}/${repo}`,
+        clone_url: `https://github.com/${owner}/${repo}.git`,
         stargazers_count: 0,
         language: null,
         forks_count: 0,

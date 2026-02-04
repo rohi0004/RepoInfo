@@ -1,14 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { ArrowRight, Github, Mail, Shield } from "lucide-react";
-import { personaBlueprints } from "@/lib/feature-blueprints";
 
 export default function LandingPage() {
-  const [activePersona, setActivePersona] = useState(personaBlueprints[0].id);
-  const selectedPersona = personaBlueprints.find((persona) => persona.id === activePersona) ?? personaBlueprints[0];
-
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
       <div className="absolute inset-0 bg-gradient-to-br from-teal-500/06 via-green-500/03 to-transparent pointer-events-none" />
@@ -170,72 +165,6 @@ export default function LandingPage() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-
-          <div className="mt-20">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-3">Feature blueprints, tailored to your team</h2>
-              <p className="max-w-2xl mx-auto" style={{ color: 'var(--muted)' }}>
-                Pick a persona to preview the next best features you can build with RepoInfo. Each idea is aligned to
-                common goals like faster onboarding, safer releases, and clearer architecture visibility.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-3 mb-10">
-              {personaBlueprints.map((persona) => {
-                const Icon = persona.icon;
-                const isActive = persona.id === selectedPersona.id;
-
-                return (
-                  <button
-                    key={persona.id}
-                    type="button"
-                    onClick={() => setActivePersona(persona.id)}
-                    className="px-4 py-2 rounded-full text-sm font-semibold inline-flex items-center gap-2 transition-all"
-                    style={{
-                      border: '1px solid var(--border)',
-                      background: isActive ? 'rgba(112,221,181,0.12)' : 'var(--surface)',
-                      color: isActive ? 'var(--accent)' : 'var(--muted)'
-                    }}
-                  >
-                    <Icon className="w-4 h-4" aria-hidden="true" />
-                    {persona.label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6">
-              {selectedPersona.features.map((feature) => (
-                <div
-                  key={feature.title}
-                  className="rounded-2xl p-6 h-full"
-                  style={{ background: 'var(--surface)', border: '1px solid var(--border)' }}
-                >
-                  <h3 className="text-xl font-semibold mb-3">{feature.title}</h3>
-                  <p style={{ color: 'var(--muted)' }}>{feature.detail}</p>
-                  <div className="mt-4 rounded-xl p-3" style={{ border: '1px solid var(--border)', background: 'rgba(12,18,28,0.4)' }}>
-                    <p className="text-xs uppercase tracking-[0.2em] mb-2" style={{ color: 'var(--muted)' }}>
-                      Example prompt
-                    </p>
-                    <p className="text-sm font-medium" style={{ color: 'var(--foreground)' }}>
-                      {feature.prompt}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-8 flex items-center justify-center">
-              <Link
-                href="/discover"
-                className="px-6 py-3 rounded-full text-sm font-semibold inline-flex items-center gap-2"
-                style={{ background: 'rgba(59,130,246,0.12)', color: 'var(--foreground)', border: '1px solid var(--border)' }}
-              >
-                Explore these ideas in your repo
-                <ArrowRight className="w-4 h-4" />
-              </Link>
             </div>
           </div>
 

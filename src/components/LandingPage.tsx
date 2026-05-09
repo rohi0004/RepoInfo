@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { ArrowRight, Github, Mail, Shield } from "lucide-react";
 
 export default function LandingPage() {
@@ -16,8 +15,7 @@ export default function LandingPage() {
             <span className="text-xl font-bold">RepoInfo</span>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/login" className="px-3 py-2 rounded-md hover:bg-white/2 text-muted">Log In</Link>
-            <Link href="/signup" className="px-3 py-2 rounded-md" style={{ background: 'linear-gradient(90deg,var(--gradient-start), var(--gradient-end))', color: 'white' }}>Sign Up</Link>
+            <span className="px-3 py-2 rounded-md text-sm" style={{ color: 'var(--muted)' }}>Guest access enabled</span>
           </div>
         </div>
       </header>
@@ -39,19 +37,10 @@ export default function LandingPage() {
             </p>
 
             <div className="flex items-center justify-center gap-4">
-              <button onClick={async () => {
-                    try {
-                      const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
-                      if (res.ok) {
-                        window.location.href = '/discover';
-                      } else {
-                        window.location.href = '/login';
-                      }
-                    } catch (e) {
-                      window.location.href = '/login';
-                    }
+              <button onClick={() => {
+                    window.location.href = '/discover?trial=1';
                 }} className="px-8 py-6 text-lg rounded-md inline-flex items-center" style={{ background: 'linear-gradient(90deg, var(--gradient-start), var(--gradient-end))', color: 'white' }}>
-                  Get Started
+                  Start Exploring
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </button>
               <button className="px-8 py-6 text-lg rounded-md inline-flex items-center" style={{ border: '1px solid var(--border)', color: 'var(--muted)', background: 'transparent' }}>

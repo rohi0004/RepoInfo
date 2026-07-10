@@ -1,17 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
 import JsonLd from "./components/json-ld";
 import ThemeProviderWrapper from "../components/ThemeProviderWrapper";
 import ToasterWrapper from "../components/ToasterWrapper";
 import ClientProfileMenuWrapper from "../components/ClientProfileMenuWrapper";
-
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-});
 
 export const viewport: Viewport = {
   themeColor: "#7979cfff",
@@ -107,10 +100,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${montserrat.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preload" as="image" href="/RepoInfo.png" />
       </head>
       <body className="antialiased font-sans" suppressHydrationWarning style={{ background: 'var(--background)', color: 'var(--foreground)' }}>
